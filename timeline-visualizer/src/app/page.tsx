@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import HamburgerMenu from '@/components/HamburgerMenu';
 import FilterPanel from '@/components/FilterPanel';
+import ChatWindow from '@/components/ChatWindow';
 
 // Use dynamic import with SSR disabled for React Flow
 // This is necessary because React Flow uses browser APIs
@@ -11,8 +12,9 @@ const TimelineFlow = dynamic(() => import('@/components/TimelineFlow'), {
   ssr: false
 });
 
-// Shared filter state context 
+// Context providers
 import { TimelineProvider } from '@/contexts/TimelineContext';
+import { ChatProvider } from '@/contexts/ChatContext';
 
 const HomePageContent = () => {
   const [filterOpen, setFilterOpen] = useState(false);
@@ -78,6 +80,7 @@ const HomePageContent = () => {
       {/* Add padding-top to account for the fixed header */}
       <main className="w-full h-full pt-14">
         <TimelineFlow />
+        <ChatWindow />
       </main>
     </div>
   );
@@ -86,7 +89,9 @@ const HomePageContent = () => {
 export default function Home() {
   return (
     <TimelineProvider>
-      <HomePageContent />
+      <ChatProvider>
+        <HomePageContent />
+      </ChatProvider>
     </TimelineProvider>
   );
 }
