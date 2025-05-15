@@ -31,7 +31,7 @@ const ChatWindow = () => {
       {/* Chat toggle button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 transition-colors z-50"
+        className={`fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-600 to-indigo-800 text-white rounded-full shadow-xl flex items-center justify-center hover:from-indigo-700 hover:to-indigo-900 transition-all z-50 ${!isOpen ? 'animate-pulse-slow' : ''}`}
         aria-label={isOpen ? "Close chat" : "Open chat"}
       >
         {isOpen ? (
@@ -40,7 +40,7 @@ const ChatWindow = () => {
           </svg>
         ) : (
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
           </svg>
         )}
       </button>
@@ -52,9 +52,14 @@ const ChatWindow = () => {
         }`}
       >
         {/* Chat header */}
-        <div className="bg-gray-800 px-4 py-3 flex items-center justify-between border-b border-gray-700">
-          <h3 className="text-white font-medium">Historical Events Generator</h3>
-          <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+        <div className="bg-gradient-to-r from-indigo-800 to-indigo-900 px-4 py-3 flex items-center justify-between border-b border-indigo-700 shadow-md">
+          <h3 className="text-white font-medium flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Historical Events Generator
+          </h3>
+          <span className="w-3 h-3 bg-green-500 rounded-full shadow-inner"></span>
         </div>
         
         {/* Messages container */}
@@ -69,7 +74,7 @@ const ChatWindow = () => {
               <div
                 className={`p-3 rounded-lg ${
                   message.sender === 'user'
-                    ? 'bg-blue-600 text-white rounded-br-none'
+                    ? 'bg-indigo-700 text-white rounded-br-none'
                     : 'bg-gray-800 text-gray-200 rounded-bl-none'
                 }`}
               >
@@ -77,16 +82,16 @@ const ChatWindow = () => {
                   <div className="flex items-center space-x-2">
                     <span>{message.text}</span>
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse delay-100"></div>
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse delay-200"></div>
+                      <div className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></div>
+                      <div className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse delay-100"></div>
+                      <div className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse delay-200"></div>
                     </div>
                   </div>
                 ) : (
                   <>
                     {message.text}
                     {message.generatedEvents && message.generatedEvents.length > 0 && (
-                      <div className="mt-2 text-xs text-blue-300 italic">
+                      <div className="mt-2 text-xs text-indigo-300 italic">
                         Added {message.generatedEvents.length} historical events to the timeline
                       </div>
                     )}
@@ -123,7 +128,7 @@ const ChatWindow = () => {
             <button
               onClick={handleSendMessage}
               disabled={inputText.trim() === '' || isProcessing}
-              className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-r-md ${
+              className={`bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-r-md ${
                 inputText.trim() === '' || isProcessing ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >

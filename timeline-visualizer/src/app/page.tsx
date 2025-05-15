@@ -28,7 +28,7 @@ const HomePageContent = () => {
       <header className="fixed top-0 z-50 w-full bg-gray-900 bg-opacity-70 backdrop-blur-md border-b border-gray-800">
         <div className="container mx-auto py-4 px-6 flex items-center justify-between">
           <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-            Timeline Generator
+            Chronoscape
           </h1>
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-400">

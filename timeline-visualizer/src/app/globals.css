@@ -16,6 +16,12 @@
   --cyber-text: #E2E8F0;
 }
 
+/* Hide Next.js icon */
+[data-nextjs-dialog-supporting],
+[data-nextjs-dialog-banner] {
+  display: none !important;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
