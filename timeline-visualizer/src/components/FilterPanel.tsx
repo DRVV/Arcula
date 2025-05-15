@@ -1,72 +1,141 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { timelineEvents } from '@/data/timelineEvents';
-import { FilterState } from '@/types/timeline';
-
-// Extract all unique categories from timeline events
-const extractCategories = () => {
-  const categories = new Set<string>();
-  timelineEvents.forEach(event => {
-    event.category.forEach(cat => categories.add(cat));
-  });
-  return Array.from(categories).sort();
-};
-
-// Get date range from timeline events
-const getDateRange = () => {
-  const dates = timelineEvents.map(event => event.date.getTime());
-  return [
-    new Date(Math.min(...dates)),
-    new Date(Math.max(...dates))
-  ] as [Date, Date];
-};
+import React, { useState } from 'react';
+import { useTimeline, extractCategories, getDateRange } from '@/contexts/TimelineContext';
 
 interface FilterPanelProps {
-  filters: FilterState;
-  onChange: (newFilters: FilterState) => void;
+  inHeader?: boolean;
 }
 
-export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
-  // Initialize panel to open state on first render for discoverability
+export default function FilterPanel({ inHeader = false }: FilterPanelProps) {
+  // Get filters and setter from context
+  const { filters, setFilters } = useTimeline();
+  
+  // Only use isOpen state for sidebar version
   const [isOpen, setIsOpen] = useState(true);
   const allCategories = extractCategories();
   
-  // Format date to display year only
-  const formatYear = (date: Date) => date.getFullYear().toString();
-  
   // Toggle a category in the filter
   const toggleCategory = (category: string) => {
-    onChange({
-      ...filters,
+    setFilters(prev => ({
+      ...prev,
       categories: {
-        ...filters.categories,
-        [category]: !filters.categories[category]
+        ...prev.categories,
+        [category]: !prev.categories[category]
       }
-    });
+    }));
   };
   
   // Set minimum importance level
   const setMinImportance = (level: number) => {
-    onChange({
-      ...filters,
+    setFilters(prev => ({
+      ...prev,
       minImportance: level
-    });
+    }));
   };
   
   // Handle search query changes
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange({
-      ...filters,
+    setFilters(prev => ({
+      ...prev,
       searchQuery: e.target.value
+    }));
+  };
+  
+  // Reset all filters
+  const resetFilters = () => {
+    setFilters({
+      categories: Object.fromEntries(allCategories.map(cat => [cat, true])),
+      minImportance: 1,
+      dateRange: getDateRange(),
+      searchQuery: ''
     });
   };
   
-  // Toggle panel open/closed
+  // Toggle panel open/closed (only for sidebar version)
   const togglePanel = () => {
     setIsOpen(!isOpen);
   };
   
+  // Different styling based on location
+  const panelClass = inHeader
+    ? "glass-panel w-80 p-4 rounded-lg shadow-xl"
+    : "glass-panel w-72 p-4 rounded-r-lg shadow-xl"; 
+  
+  // Render either the sidebar version or the header dropdown version
+  if (inHeader) {
+    return (
+      <div className={panelClass}>
+        
+        <h2 className="text-lg font-bold mb-4 text-center cyber-gradient bg-clip-text text-transparent">
+          Search & Filter
+        </h2>
+        
+        {/* Search */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2 text-gray-300">Search</label>
+          <input
+            type="text"
+            value={filters.searchQuery}
+            onChange={handleSearchChange}
+            placeholder="Search events..."
+            className="w-full bg-gray-800 bg-opacity-50 text-white border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        
+        {/* Importance Filter */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2 text-gray-300">Minimum Importance</label>
+          <div className="flex justify-between">
+            {[1, 2, 3, 4, 5].map(level => (
+              <button
+                key={level}
+                onClick={() => setMinImportance(level)}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                  filters.minImportance === level 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        {/* Category Filters */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2 text-gray-300">Categories</label>
+          <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+            {allCategories.map(category => (
+              <div key={category} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`header-cat-${category}`}
+                  checked={!!filters.categories[category]}
+                  onChange={() => toggleCategory(category)}
+                  className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                />
+                <label htmlFor={`header-cat-${category}`} className="ml-2 text-sm text-gray-300 capitalize">
+                  {category}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Clear Filters */}
+        <button
+          onClick={resetFilters}
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-2 px-4 rounded-md transition-colors"
+        >
+          Reset Filters
+        </button>
+      </div>
+    );
+  }
+  
+  // Sidebar panel version
   return (
     <div className={`fixed left-0 top-20 z-40 transition-all duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-[calc(100%-3rem)]'}`}>
       {/* Toggle Button */}
@@ -88,7 +157,7 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
       </button>
       
       {/* Filter Panel */}
-      <div className="glass-panel w-72 p-4 rounded-r-lg shadow-xl">
+      <div className={panelClass}>
         <h2 className="text-lg font-bold mb-4 text-center cyber-gradient bg-clip-text text-transparent">
           Timeline Filters
         </h2>
@@ -133,12 +202,12 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
               <div key={category} className="flex items-center">
                 <input
                   type="checkbox"
-                  id={`cat-${category}`}
+                  id={`sidebar-cat-${category}`}
                   checked={!!filters.categories[category]}
                   onChange={() => toggleCategory(category)}
                   className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
                 />
-                <label htmlFor={`cat-${category}`} className="ml-2 text-sm text-gray-300 capitalize">
+                <label htmlFor={`sidebar-cat-${category}`} className="ml-2 text-sm text-gray-300 capitalize">
                   {category}
                 </label>
               </div>
@@ -148,12 +217,7 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
         
         {/* Clear Filters */}
         <button
-          onClick={() => onChange({
-            categories: Object.fromEntries(allCategories.map(cat => [cat, true])),
-            minImportance: 1,
-            dateRange: getDateRange(),
-            searchQuery: ''
-          })}
+          onClick={resetFilters}
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-2 px-4 rounded-md transition-colors"
         >
           Reset Filters

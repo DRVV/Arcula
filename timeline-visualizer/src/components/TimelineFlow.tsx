@@ -18,9 +18,9 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { TimelineEvent, FilterState } from '@/types/timeline';
+import { TimelineEvent } from '@/types/timeline';
 import EventNode from './EventNode';
-import FilterPanel from './FilterPanel';
+import { useTimeline } from '@/contexts/TimelineContext';
 import { timelineEvents } from '@/data/timelineEvents';
 import { format } from 'date-fns';
 
@@ -29,45 +29,6 @@ const nodeTypes: NodeTypes = {
   timelineEvent: EventNode,
 };
 
-// Extract all unique categories from timeline events
-const extractCategories = () => {
-  const categories = new Set<string>();
-  timelineEvents.forEach(event => {
-    event.category.forEach(cat => categories.add(cat));
-  });
-  return Array.from(categories).sort();
-};
-
-// Get date range from timeline events
-const getDateRange = () => {
-  const dates = timelineEvents.map(event => event.date.getTime());
-  return [
-    new Date(Math.min(...dates)),
-    new Date(Math.max(...dates))
-  ] as [Date, Date];
-};
-
-// Filter events based on filter settings
-const filterEvents = (events: TimelineEvent[], filters: FilterState): TimelineEvent[] => {
-  return events.filter(event => {
-    // Filter by importance
-    if (event.importance < filters.minImportance) return false;
-    
-    // Filter by category
-    const hasCategory = event.category.some(cat => filters.categories[cat]);
-    if (!hasCategory) return false;
-    
-    // Filter by search query
-    if (filters.searchQuery && filters.searchQuery.trim() !== '') {
-      const query = filters.searchQuery.toLowerCase().trim();
-      const matchesTitle = event.title.toLowerCase().includes(query);
-      const matchesDescription = event.description.toLowerCase().includes(query);
-      if (!matchesTitle && !matchesDescription) return false;
-    }
-    
-    return true;
-  });
-};
 
 // Helper function to get the first day of a month
 const getFirstDayOfMonth = (date: Date): Date => {
@@ -98,32 +59,41 @@ const TimeGrid = ({
 }) => {
   // Use React Flow's transform store values directly
   const { zoom, x, y } = useViewport();
-  const [containerHeight, setContainerHeight] = useState(600);
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight); // Initialize with window height
   const gridRef = useRef<HTMLDivElement>(null);
   const timeRange = maxDate.getTime() - minDate.getTime();
   
-  // Update container height on mount and resize
+  // Update viewport height on mount and resize
   useEffect(() => {
     const updateHeight = () => {
-      if (gridRef.current && gridRef.current.parentElement) {
-        setContainerHeight(gridRef.current.parentElement.clientHeight);
-      }
+      // Use the height of the ReactFlow viewport if available, otherwise window height
+      const rfViewport = gridRef.current?.closest('.react-flow__viewport');
+      setViewportHeight(rfViewport ? rfViewport.clientHeight : window.innerHeight);
     };
     
-    updateHeight();
-    window.addEventListener('resize', updateHeight);
-    return () => window.removeEventListener('resize', updateHeight);
+    updateHeight(); // Initial call
+    
+    // Debounce resize listener for performance
+    let resizeTimeout: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(updateHeight, 100);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(resizeTimeout);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
   
   // Calculate visibility thresholds based on zoom
-  const showMonths = zoom >= 0.5;
-  const showDays = zoom >= 2;
-  const showYearLabels = zoom >= 0.2;
+  const showMonths = zoom >= 0.3; // Show months at a lower zoom level
+  const showYearLabels = zoom >= 0.1; // Show year labels earlier
   
   // Adjust opacity based on zoom
-  const yearOpacity = Math.min(0.8, zoom * 0.6);
-  const monthOpacity = Math.min(0.6, zoom * 0.4);
-  const dayOpacity = Math.min(0.4, zoom * 0.2);
+  const yearOpacity = Math.min(0.8, zoom * 0.8); // Make years more prominent
+  const monthOpacity = Math.min(0.6, zoom * 0.5); // Adjust month opacity
   
   // Calculate range of years based on current viewport
   const viewportStartDate = minDate.getTime();
@@ -149,8 +119,14 @@ const TimeGrid = ({
     >
       <svg 
         width={gridScale} 
-        height="100%" 
+        height={viewportHeight / zoom} // Adjust SVG height based on zoom
         className="react-flow__grid"
+        style={{ 
+          position: 'absolute', 
+          top: 0,
+          left: 0,
+          overflow: 'visible' // Allow labels to be visible outside SVG bounds
+        }}
       >
         {/* Year lines */}
         {Array.from({ length: endYear - startYear + 1 }, (_, i) => {
@@ -166,22 +142,36 @@ const TimeGrid = ({
                 x1={xPos} 
                 y1={0} 
                 x2={xPos} 
-                y2="100%" 
+                y2={viewportHeight / zoom} // Line fills the adjusted SVG height
                 stroke="#4B5563" 
-                strokeWidth={2 / zoom} // Adjust stroke width based on zoom
+                strokeWidth={2 / zoom} 
                 strokeOpacity={yearOpacity}
               />
+              {/* Year marker - fixed position at bottom of graph */}
               {showYearLabels && (
-                <text 
-                  x={xPos + 5 / zoom} 
-                  y={containerHeight - 20 / zoom} 
-                  fontSize={12 / zoom} // Scale font size with zoom
-                  fill="#9CA3AF" 
-                  fontWeight="bold"
-                  style={{ pointerEvents: 'none' }}
-                >
-                  {year}
-                </text>
+                <g>
+                  {/* Year label with background rectangle for better visibility */}
+                  <rect
+                    x={xPos - (1 / zoom)}
+                    y={viewportHeight / zoom - (25 / zoom)}
+                    width={30 / zoom}
+                    height={16 / zoom}
+                    rx={3 / zoom}
+                    fill="#0F172A"
+                    fillOpacity={0.7}
+                  />
+                  <text 
+                    x={xPos + (5 / zoom)} 
+                    y={viewportHeight / zoom - (13 / zoom)}
+                    fontSize={12 / zoom} 
+                    fill="#FFFFFF" 
+                    fontWeight="bold"
+                    style={{ pointerEvents: 'none', userSelect: 'none' }}
+                    textAnchor="start"
+                  >
+                    {year}
+                  </text>
+                </g>
               )}
               
               {/* Month lines for this year */}
@@ -198,54 +188,34 @@ const TimeGrid = ({
                       x1={monthXPos} 
                       y1={0} 
                       x2={monthXPos} 
-                      y2="100%" 
+                      y2={viewportHeight / zoom} 
                       stroke="#374151" 
-                      strokeWidth={1 / zoom} // Adjust stroke width
+                      strokeWidth={1 / zoom} 
                       strokeOpacity={monthOpacity}
                     />
-                    {zoom >= 1.5 && (
-                      <text 
-                        x={monthXPos + 2 / zoom} 
-                        y={containerHeight - 40 / zoom} 
-                        fontSize={10 / zoom} // Scale font size
-                        fill="#9CA3AF"
-                        style={{ pointerEvents: 'none' }}
-                      >
-                        {monthDate.toLocaleString('default', { month: 'short' })}
-                      </text>
+                    {zoom >= 1.0 && ( // Show month labels at a slightly lower zoom
+                      <g>
+                        <rect
+                          x={monthXPos - (1 / zoom)}
+                          y={viewportHeight / zoom - (45 / zoom)}
+                          width={24 / zoom}
+                          height={14 / zoom}
+                          rx={2 / zoom}
+                          fill="#1E40AF"
+                          fillOpacity={0.6}
+                        />
+                        <text 
+                          x={monthXPos + (3 / zoom)} 
+                          y={viewportHeight / zoom - (35 / zoom)}
+                          fontSize={9 / zoom} 
+                          fill="#7DD3FC"
+                          style={{ pointerEvents: 'none', userSelect: 'none' }}
+                          textAnchor="start"
+                        >
+                          {monthDate.toLocaleString('default', { month: 'short' })}
+                        </text>
+                      </g>
                     )}
-                    
-                    {/* Day markers */}
-                    {showDays && (() => {
-                      const daysInMonth = new Date(year, month + 1, 0).getDate();
-                      const dayIncrement = zoom >= 3 ? 1 : 5;
-                      
-                      return Array.from(
-                        { length: Math.ceil(daysInMonth / dayIncrement) }, 
-                        (_, k) => {
-                          const day = k * dayIncrement + 1;
-                          if (day > daysInMonth) return null;
-                          
-                          const dayDate = new Date(year, month, day);
-                          if (dayDate < minDate || dayDate > maxDate) return null;
-                          
-                          const dayXPos = ((dayDate.getTime() - minDate.getTime()) / timeRange) * gridScale;
-                          
-                          return (
-                            <line 
-                              key={`day-${year}-${month}-${day}`}
-                              x1={dayXPos} 
-                              y1={0} 
-                              x2={dayXPos} 
-                              y2="100%" 
-                              stroke="#374151" 
-                              strokeWidth={0.5 / zoom} // Adjust stroke width
-                              strokeOpacity={dayOpacity}
-                            />
-                          );
-                        }
-                      );
-                    })()}
                   </g>
                 );
               })}
@@ -258,7 +228,7 @@ const TimeGrid = ({
 };
 
 // Function to create nodes and edges from timeline events
-const createNodesAndEdges = (events: TimelineEvent[], filtered: boolean = false): { nodes: Node[]; edges: Edge[]; minDate: Date; maxDate: Date } => {
+const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: Edge[]; minDate: Date; maxDate: Date } => {
   // Handle empty events array
   if (events.length === 0) {
     return { nodes: [], edges: [], minDate: new Date(), maxDate: new Date() };
@@ -353,8 +323,7 @@ const TimelineControls = () => {
 
   // Determine visible details based on zoom level
   const getZoomDetails = () => {
-    if (zoom >= 2) return "Years, Months & Days";
-    if (zoom >= 0.5) return "Years & Months";
+    if (zoom >= 0.3) return "Years & Months";
     return "Years only";
   };
   
@@ -418,6 +387,7 @@ const TimelineControls = () => {
 const TimelineFlowInner = () => {
   const reactFlowInstance = useReactFlow();
   const { x, y, zoom } = useViewport();
+  const { filteredEvents } = useTimeline();
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [timeRange, setTimeRange] = useState<{ minDate: Date, maxDate: Date, gridScale: number }>({
@@ -425,21 +395,14 @@ const TimelineFlowInner = () => {
     maxDate: new Date(2025, 0, 1),
     gridScale: 10000
   });
-  const [filters, setFilters] = useState<FilterState>({
-    categories: Object.fromEntries(extractCategories().map(cat => [cat, true])), // All categories enabled by default
-    minImportance: 1, // Show all importance levels by default
-    dateRange: getDateRange(),
-    searchQuery: ''
-  });
   
-  // Filter events and create nodes/edges when filters change
+  // Create nodes/edges whenever filteredEvents changes
   useEffect(() => {
-    const filteredEvents = filterEvents(timelineEvents, filters);
-    const { nodes, edges, minDate, maxDate } = createNodesAndEdges(filteredEvents, true);
+    const { nodes, edges, minDate, maxDate } = createNodesAndEdges(filteredEvents);
     setNodes(nodes);
     setEdges(edges);
     setTimeRange({ minDate, maxDate, gridScale: 10000 });
-  }, [filters]);
+  }, [filteredEvents]);
   
   // Init and fit view
   useEffect(() => {
@@ -477,8 +440,6 @@ const TimelineFlowInner = () => {
         elevateNodesOnSelect={true}
         nodesDraggable={false}
       >
-        {/* Filter Panel */}
-        <FilterPanel filters={filters} onChange={setFilters} />
         
         {/* Custom time grid that transforms with viewport */}
         <TimeGrid 
@@ -501,22 +462,6 @@ const TimelineFlowInner = () => {
         />
         <Panel position="top-right">
           <TimelineControls />
-        </Panel>
-        {/* Time period markers */}
-        <Panel position="bottom-center" className="w-full flex justify-center px-10 py-2 bg-gray-900 bg-opacity-80 backdrop-blur-sm">
-          <div className="flex space-x-12 overflow-x-auto pb-2 max-w-full">
-            {timelineEvents
-              .filter(event => event.importance >= 4) // Only show major events
-              .sort((a, b) => a.date.getTime() - b.date.getTime())
-              .map((event) => (
-              <div key={event.id} className="text-xs text-gray-400 flex flex-col items-center flex-shrink-0">
-                <div className="font-mono mb-1">{format(event.date, 'yyyy')}</div>
-                <div className="text-white text-xs whitespace-nowrap w-28 text-center">
-                  {event.title}
-                </div>
-              </div>
-            ))}
-          </div>
         </Panel>
       </ReactFlow>
     </div>
