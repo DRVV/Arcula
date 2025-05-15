@@ -12,13 +12,13 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
   
   // Check if this event is highlighted by a chat query
   const isHighlighted = React.useMemo(() => {
-    // Get the last bot message with related events
+    // Get the last bot message with generated events
     const lastBotMessageWithEvents = [...messages]
       .reverse()
-      .find(msg => msg.sender === 'bot' && msg.relatedEvents && msg.relatedEvents.length > 0);
+      .find(msg => msg.sender === 'bot' && msg.generatedEvents && msg.generatedEvents.length > 0);
     
-    // Check if this event is in the related events
-    return lastBotMessageWithEvents?.relatedEvents?.some(event => event.id === data.event.id) || false;
+    // Check if this event is in the generated events
+    return lastBotMessageWithEvents?.generatedEvents?.some(event => event.id === data.event.id) || false;
   }, [messages, data.event.id]);
   // Make sure event data exists
   if (!data || !data.event) {

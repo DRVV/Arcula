@@ -6,7 +6,7 @@ import { LLMTimelineResponse } from './openaiService';
 
 export const processMockQuery = (
   userQuery: string,
-  allEvents: TimelineEvent[]
+  existingEvents: TimelineEvent[]
 ): Promise<LLMTimelineResponse> => {
   return new Promise((resolve) => {
     // Simulate network delay
@@ -14,128 +14,137 @@ export const processMockQuery = (
       // Convert query to lowercase for easier matching
       const query = userQuery.toLowerCase();
       
-      // Extract relevant events based on simple keyword matching
-      let relevantEvents: TimelineEvent[] = [];
+      // Generate mock events based on the query
+      let generatedEvents: TimelineEvent[] = [];
       let explanation = '';
-      let suggestions: string[] = [];
       
-      // Match based on categories
-      if (query.includes('hardware')) {
-        relevantEvents = allEvents.filter(event => 
-          event.category.includes('hardware')
-        );
-        explanation = 'I found several hardware-related events in the timeline. These represent key moments in the evolution of mobile device hardware.';
-        suggestions = [
-          'Try comparing early vs. recent hardware',
-          'Look at the relationship between hardware and software evolution'
+      // Create some sample events based on the query
+      // Generate 3-5 random events based on the query term
+      const today = new Date();
+      const startYear = 1800;
+      const endYear = today.getFullYear();
+
+      const commonCategories = ["politics", "technology", "science", "culture", "war", "economics"];
+      
+      const getRandomDate = () => {
+        const year = startYear + Math.floor(Math.random() * (endYear - startYear));
+        const month = Math.floor(Math.random() * 12);
+        const day = Math.floor(Math.random() * 28) + 1;
+        return new Date(year, month, day);
+      };
+
+      const numberOfEvents = 3 + Math.floor(Math.random() * 3); // 3-5 events
+      const mockEventIds = Array.from({ length: numberOfEvents }, (_, i) => `mock-${Date.now()}-${i}`);
+      
+      // Create events based on query topic
+      if (query.includes('world war')) {
+        generatedEvents = [
+          {
+            id: mockEventIds[0],
+            date: new Date('1914-06-28'),
+            title: 'Assassination of Archduke Franz Ferdinand',
+            description: 'Archduke Franz Ferdinand of Austria was assassinated in Sarajevo, triggering a chain of events that led to World War I.',
+            category: ['war', 'politics', 'milestone'],
+            importance: 5
+          },
+          {
+            id: mockEventIds[1],
+            date: new Date('1915-05-07'),
+            title: 'Sinking of the Lusitania',
+            description: 'The British ocean liner RMS Lusitania was torpedoed by a German U-boat, killing 1,198 passengers and crew.',
+            category: ['war', 'naval'],
+            importance: 4
+          },
+          {
+            id: mockEventIds[2],
+            date: new Date('1939-09-01'),
+            title: 'Germany Invades Poland',
+            description: 'Nazi Germany invaded Poland, marking the beginning of World War II in Europe.',
+            category: ['war', 'politics', 'milestone'],
+            importance: 5
+          }
         ];
-      } 
-      // Match based on Apple products
-      else if (query.includes('apple') || query.includes('iphone') || query.includes('ipad') || query.includes('mac')) {
-        relevantEvents = allEvents.filter(event => 
-          event.title.toLowerCase().includes('apple') || 
-          event.title.toLowerCase().includes('iphone') || 
-          event.title.toLowerCase().includes('ipad') ||
-          event.description.toLowerCase().includes('apple')
-        );
-        explanation = 'Here are the key Apple-related events that appear in the timeline. Apple has been a significant innovator in mobile technology.';
-        suggestions = [
-          'Compare with Android or other competing products',
-          'Examine how Apple influenced industry trends'
-        ];
+        explanation = 'These events represent critical moments in World War I and World War II history.';
       }
-      // Match based on Android/Google
-      else if (query.includes('android') || query.includes('google')) {
-        relevantEvents = allEvents.filter(event => 
-          event.title.toLowerCase().includes('android') || 
-          event.title.toLowerCase().includes('google') ||
-          event.description.toLowerCase().includes('android') ||
-          event.description.toLowerCase().includes('google')
-        );
-        explanation = 'These events relate to Android and Google\'s impact on mobile technology. The Android ecosystem has been a major force in the smartphone market.';
-        suggestions = [
-          'Look at how Android evolved over time',
-          'Compare with iOS and Apple products'
+      else if (query.includes('space') || query.includes('nasa')) {
+        generatedEvents = [
+          {
+            id: mockEventIds[0],
+            date: new Date('1957-10-04'),
+            title: 'Sputnik 1 Launch',
+            description: 'The Soviet Union launched Sputnik 1, the first artificial Earth satellite, beginning the Space Age.',
+            category: ['space', 'technology', 'milestone'],
+            importance: 5
+          },
+          {
+            id: mockEventIds[1],
+            date: new Date('1969-07-20'),
+            title: 'Apollo 11 Moon Landing',
+            description: 'Neil Armstrong and Buzz Aldrin became the first humans to walk on the Moon.',
+            category: ['space', 'technology', 'milestone'],
+            importance: 5
+          },
+          {
+            id: mockEventIds[2],
+            date: new Date('1990-04-24'),
+            title: 'Hubble Space Telescope Launch',
+            description: 'NASA launched the Hubble Space Telescope, revolutionizing astronomy with unprecedented clear images of the universe.',
+            category: ['space', 'science', 'innovation'],
+            importance: 4
+          }
         ];
+        explanation = 'These events highlight key milestones in space exploration and astronomy.';
       }
-      // Match based on network technology
-      else if (query.includes('network') || query.includes('5g') || query.includes('4g') || query.includes('lte')) {
-        relevantEvents = allEvents.filter(event => 
-          event.category.includes('network') ||
-          event.title.toLowerCase().includes('5g') ||
-          event.title.toLowerCase().includes('4g') ||
-          event.title.toLowerCase().includes('lte')
-        );
-        explanation = 'Network technology has been crucial to mobile device evolution. These events highlight key network infrastructure developments.';
-        suggestions = [
-          'Note how faster networks enabled new mobile capabilities',
-          'Examine the timing between network updates and new device features'
+      else if (query.includes('computer') || query.includes('tech')) {
+        generatedEvents = [
+          {
+            id: mockEventIds[0],
+            date: new Date('1946-02-14'),
+            title: 'ENIAC Unveiled',
+            description: 'The Electronic Numerical Integrator and Computer (ENIAC), the first programmable, electronic, general-purpose digital computer, was unveiled at the University of Pennsylvania.',
+            category: ['technology', 'computing', 'milestone'],
+            importance: 5
+          },
+          {
+            id: mockEventIds[1],
+            date: new Date('1975-04-04'),
+            title: 'Microsoft Founded',
+            description: 'Bill Gates and Paul Allen founded Microsoft, which would become one of the world\'s largest software companies.',
+            category: ['technology', 'business', 'computing'],
+            importance: 4
+          },
+          {
+            id: mockEventIds[2],
+            date: new Date('1989-03-12'),
+            title: 'World Wide Web Proposed',
+            description: 'Tim Berners-Lee proposed the World Wide Web while working at CERN, revolutionizing information sharing globally.',
+            category: ['technology', 'internet', 'milestone'],
+            importance: 5
+          }
         ];
+        explanation = 'These events mark pivotal moments in the history of computing and information technology.';
       }
-      // Match based on software/apps
-      else if (query.includes('software') || query.includes('app') || query.includes('apps')) {
-        relevantEvents = allEvents.filter(event => 
-          event.category.includes('software') ||
-          event.category.includes('operating system') ||
-          event.title.toLowerCase().includes('app store') ||
-          event.description.toLowerCase().includes('software')
-        );
-        explanation = 'Software and apps have been essential to the mobile ecosystem. These events show how software has evolved alongside hardware.';
-        suggestions = [
-          'Look at how app ecosystems developed',
-          'Compare different operating system approaches'
-        ];
-      }
-      // Match based on time periods
-      else if (query.includes('early') || query.includes('beginning') || query.includes('first')) {
-        // Sort by date and take earliest events
-        relevantEvents = [...allEvents]
-          .sort((a, b) => a.date.getTime() - b.date.getTime())
-          .slice(0, 5);
-        explanation = 'These are the earliest events in mobile technology history shown in the timeline. They represent the foundations of modern mobile devices.';
-        suggestions = [
-          'Compare with recent developments',
-          'Look at how long it took for technology to evolve'
-        ];
-      }
-      // Match based on recent events
-      else if (query.includes('recent') || query.includes('latest') || query.includes('newest')) {
-        // Sort by date and take latest events
-        relevantEvents = [...allEvents]
-          .sort((a, b) => b.date.getTime() - a.date.getTime())
-          .slice(0, 5);
-        explanation = 'These are the most recent events in the timeline, showing the latest developments in mobile technology.';
-        suggestions = [
-          'Compare with earlier technology',
-          'Look for trends that might continue in the future'
-        ];
-      }
-      // Match based on importance
-      else if (query.includes('important') || query.includes('significant') || query.includes('major')) {
-        relevantEvents = allEvents.filter(event => event.importance >= 4);
-        explanation = 'These events were particularly significant in the evolution of mobile technology, representing major milestones or innovations.';
-        suggestions = [
-          'Notice how major events often led to new technology waves',
-          'Look at the timing between major innovations'
-        ];
-      }
-      // Default response
       else {
-        // Take a random selection of 3-5 events
-        const shuffled = [...allEvents].sort(() => 0.5 - Math.random());
-        relevantEvents = shuffled.slice(0, Math.floor(Math.random() * 3) + 3);
-        explanation = 'Here are some notable events from the mobile technology timeline that might interest you. You can ask about specific technologies, companies, or time periods for more targeted information.';
-        suggestions = [
-          'Try asking about specific companies like Apple or Google',
-          'Ask about hardware, software, or network developments',
-          'Look for early or recent mobile technology events'
-        ];
+        // Generate generic historical events
+        for (let i = 0; i < numberOfEvents; i++) {
+          generatedEvents.push({
+            id: mockEventIds[i],
+            date: getRandomDate(),
+            title: `Historic event related to ${query} #${i+1}`,
+            description: `This is a mock description of a historical event related to ${query}. More details would be provided by the actual AI response.`,
+            category: [
+              commonCategories[Math.floor(Math.random() * commonCategories.length)],
+              commonCategories[Math.floor(Math.random() * commonCategories.length)]
+            ],
+            importance: (Math.floor(Math.random() * 5) + 1) as 1 | 2 | 3 | 4 | 5
+          });
+        }
+        explanation = `Generated ${numberOfEvents} sample historical events related to "${query}". In a real implementation, these would be historically accurate events with proper details.`;
       }
-      
+
       resolve({
-        relevantEvents,
-        explanation,
-        suggestions
+        generatedEvents,
+        explanation
       });
       
     }, 1500); // Simulate a 1.5 second delay

@@ -13,7 +13,8 @@ export default function FilterPanel({ inHeader = false }: FilterPanelProps) {
   
   // Only use isOpen state for sidebar version
   const [isOpen, setIsOpen] = useState(true);
-  const allCategories = extractCategories();
+  const { allEvents } = useTimeline();
+  const allCategories = extractCategories(allEvents);
   
   // Toggle a category in the filter
   const toggleCategory = (category: string) => {
@@ -47,7 +48,7 @@ export default function FilterPanel({ inHeader = false }: FilterPanelProps) {
     setFilters({
       categories: Object.fromEntries(allCategories.map(cat => [cat, true])),
       minImportance: 1,
-      dateRange: getDateRange(),
+      dateRange: getDateRange(allEvents),
       searchQuery: ''
     });
   };

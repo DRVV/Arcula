@@ -1,9 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { useTimeline } from './TimelineContext';
 import { TimelineEvent } from '@/types/timeline';
 import { processTimelineQuery } from '@/services/openaiService';
+import { timelineEvents } from '@/data/timelineEvents';
 
 export interface ChatMessage {
   id: string;
@@ -11,7 +11,7 @@ export interface ChatMessage {
   sender: 'user' | 'bot';
   timestamp: Date;
   isLoading?: boolean;
-  relatedEvents?: TimelineEvent[];
+  generatedEvents?: TimelineEvent[];
 }
 
 interface ChatContextType {
@@ -25,19 +25,20 @@ interface ChatContextType {
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
+// Create a context to expose messages for the TimelineContext
+export const ChatMessagesContext = createContext<ChatMessage[]>([]);
+
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
-      text: 'Hello! I can help you understand this timeline better. Try asking about specific events, time periods, or categories.',
+      text: 'Hello! Ask me about any historical events or periods, and I\'ll generate timeline events for you to visualize.',
       sender: 'bot',
       timestamp: new Date(),
     },
   ]);
-
-  const { filteredEvents, setFilters } = useTimeline();
 
   // Function to generate a response based on the user's message
   const generateResponse = (userMessage: string): string => {
@@ -48,63 +49,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       return "Hello! How can I help you explore this timeline today?";
     }
     
-    // Look for questions about time periods
-    if (message.includes('time period') || message.includes('period') || message.includes('when')) {
-      const timeRange = getTimeRangeInfo(filteredEvents);
-      return `The timeline spans from ${timeRange.start.toLocaleDateString()} to ${timeRange.end.toLocaleDateString()}, covering ${timeRange.years} years.`;
-    }
-    
-    // Look for questions about specific events
-    if (message.includes('what happened') || message.includes('tell me about')) {
-      // Extract potential keywords
-      const keywords = userMessage.split(' ').filter(word => word.length > 4);
-      const relevantEvents = findRelevantEvents(keywords, filteredEvents);
-      
-      if (relevantEvents.length > 0) {
-        const event = relevantEvents[0]; // Get the most relevant event
-        return `On ${event.date.toLocaleDateString()}: ${event.title}. ${event.description}`;
-      }
-    }
-    
-    // Look for questions about categories
-    if (message.includes('categories') || message.includes('types')) {
-      const categories = getAllCategories(filteredEvents);
-      return `The timeline contains the following categories: ${categories.join(', ')}.`;
-    }
-    
-    // Default response if no patterns match
-    return `I'm here to help you explore the timeline. You can ask about specific time periods, events, or categories.`;
-  };
-
-  // Helper function to get time range information
-  const getTimeRangeInfo = (events: TimelineEvent[]) => {
-    const dates = events.map(event => event.date.getTime());
-    const startDate = new Date(Math.min(...dates));
-    const endDate = new Date(Math.max(...dates));
-    const yearDiff = endDate.getFullYear() - startDate.getFullYear();
-    
-    return {
-      start: startDate,
-      end: endDate,
-      years: yearDiff
-    };
-  };
-  
-  // Helper function to find events relevant to keywords
-  const findRelevantEvents = (keywords: string[], events: TimelineEvent[]) => {
-    return events.filter(event => {
-      const eventText = `${event.title} ${event.description}`.toLowerCase();
-      return keywords.some(keyword => eventText.includes(keyword.toLowerCase()));
-    });
-  };
-  
-  // Helper function to get all unique categories
-  const getAllCategories = (events: TimelineEvent[]) => {
-    const categorySet = new Set<string>();
-    events.forEach(event => {
-      event.category.forEach(cat => categorySet.add(cat));
-    });
-    return Array.from(categorySet);
+    // Default response for basic mode
+    return `I can generate historical events related to any topic. Just ask me about a time period, historical event, or subject you're interested in.`;
   };
 
   const sendMessage = async (text: string) => {
@@ -125,7 +71,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     const loadingMsgId = (Date.now() + 1).toString();
     const loadingMessage: ChatMessage = {
       id: loadingMsgId,
-      text: 'Analyzing your question...',
+      text: 'Generating historical events...',
       sender: 'bot',
       timestamp: new Date(),
       isLoading: true
@@ -134,35 +80,18 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setMessages(prev => [...prev, loadingMessage]);
     
     try {
-      // Try to use OpenAI for advanced queries
-      const response = await processTimelineQuery(text, filteredEvents);
+      // Get the existing timeline events to provide context
+      const response = await processTimelineQuery(text, timelineEvents);
       
       let responseText: string;
-      let relatedEvents: TimelineEvent[] | undefined;
+      let generatedEvents: TimelineEvent[] | undefined;
       
       if (response) {
         // Use the AI-generated response
         responseText = response.explanation;
-        relatedEvents = response.relevantEvents;
+        generatedEvents = response.generatedEvents;
         
-        // Highlight these events in the timeline by updating filters if needed
-        if (relatedEvents && relatedEvents.length > 0) {
-          // Determine what categories to show
-          const categoriesToShow = new Set<string>();
-          relatedEvents.forEach(event => {
-            event.category.forEach(cat => categoriesToShow.add(cat));
-          });
-          
-          // Update filters to focus on relevant events
-          setFilters(prevFilters => ({
-            ...prevFilters,
-            categories: Object.fromEntries(
-              Object.entries(prevFilters.categories).map(([cat, _]) => 
-                [cat, categoriesToShow.has(cat)]
-              )
-            )
-          }));
-        }
+        // The events will be picked up by TimelineContext through messages state updates
       } else {
         // Fall back to basic rule-based responses if OpenAI fails
         responseText = generateResponse(text);
@@ -174,7 +103,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         text: responseText,
         sender: 'bot',
         timestamp: new Date(),
-        relatedEvents
+        generatedEvents
       };
       
       setMessages(prev => 
@@ -212,10 +141,17 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ChatContext.Provider value={{ messages, isOpen, isProcessing, setIsOpen, sendMessage, clearMessages }}>
-      {children}
-    </ChatContext.Provider>
+    <ChatMessagesContext.Provider value={messages}>
+      <ChatContext.Provider value={{ messages, isOpen, isProcessing, setIsOpen, sendMessage, clearMessages }}>
+        {children}
+      </ChatContext.Provider>
+    </ChatMessagesContext.Provider>
   );
+}
+
+// Helper hook to use just the messages
+export function useChatMessages() {
+  return useContext(ChatMessagesContext);
 }
 
 export function useChat() {

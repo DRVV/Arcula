@@ -88,10 +88,10 @@ const HomePageContent = () => {
 
 export default function Home() {
   return (
-    <TimelineProvider>
-      <ChatProvider>
+    <ChatProvider>
+      <TimelineProvider>
         <HomePageContent />
-      </ChatProvider>
-    </TimelineProvider>
+      </TimelineProvider>
+    </ChatProvider>
   );
 }

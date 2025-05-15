@@ -53,7 +53,7 @@ const ChatWindow = () => {
       >
         {/* Chat header */}
         <div className="bg-gray-800 px-4 py-3 flex items-center justify-between border-b border-gray-700">
-          <h3 className="text-white font-medium">Timeline Assistant</h3>
+          <h3 className="text-white font-medium">Historical Events Generator</h3>
           <span className="w-3 h-3 bg-green-500 rounded-full"></span>
         </div>
         
@@ -85,9 +85,9 @@ const ChatWindow = () => {
                 ) : (
                   <>
                     {message.text}
-                    {message.relatedEvents && message.relatedEvents.length > 0 && (
+                    {message.generatedEvents && message.generatedEvents.length > 0 && (
                       <div className="mt-2 text-xs text-blue-300 italic">
-                        Showing {message.relatedEvents.length} relevant events on the timeline
+                        Added {message.generatedEvents.length} historical events to the timeline
                       </div>
                     )}
                   </>
@@ -115,7 +115,7 @@ const ChatWindow = () => {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder={isProcessing ? "Processing your request..." : "Type a message..."}
+              placeholder={isProcessing ? "Generating events..." : "Ask about any historical period or events..."}
               className="flex-1 bg-gray-700 text-white placeholder-gray-400 rounded-l-md py-2 px-3 focus:outline-none resize-none max-h-24"
               rows={1}
               disabled={isProcessing}
