@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 
 const ChatWindow = () => {
-  const { messages, isOpen, setIsOpen, sendMessage } = useChat();
+  const { messages, isOpen, isProcessing, setIsOpen, sendMessage } = useChat();
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -73,7 +73,25 @@ const ChatWindow = () => {
                     : 'bg-gray-800 text-gray-200 rounded-bl-none'
                 }`}
               >
-                {message.text}
+                {message.isLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <span>{message.text}</span>
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse delay-100"></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse delay-200"></div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {message.text}
+                    {message.relatedEvents && message.relatedEvents.length > 0 && (
+                      <div className="mt-2 text-xs text-blue-300 italic">
+                        Showing {message.relatedEvents.length} relevant events on the timeline
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
               <div
                 className={`text-xs mt-1 text-gray-500 ${
@@ -97,15 +115,16 @@ const ChatWindow = () => {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Type a message..."
+              placeholder={isProcessing ? "Processing your request..." : "Type a message..."}
               className="flex-1 bg-gray-700 text-white placeholder-gray-400 rounded-l-md py-2 px-3 focus:outline-none resize-none max-h-24"
               rows={1}
+              disabled={isProcessing}
             />
             <button
               onClick={handleSendMessage}
-              disabled={inputText.trim() === ''}
+              disabled={inputText.trim() === '' || isProcessing}
               className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-r-md ${
-                inputText.trim() === '' ? 'opacity-50 cursor-not-allowed' : ''
+                inputText.trim() === '' || isProcessing ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

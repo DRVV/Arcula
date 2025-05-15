@@ -3,17 +3,21 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useTimeline } from './TimelineContext';
 import { TimelineEvent } from '@/types/timeline';
+import { processTimelineQuery } from '@/services/openaiService';
 
 export interface ChatMessage {
   id: string;
   text: string;
   sender: 'user' | 'bot';
   timestamp: Date;
+  isLoading?: boolean;
+  relatedEvents?: TimelineEvent[];
 }
 
 interface ChatContextType {
   messages: ChatMessage[];
   isOpen: boolean;
+  isProcessing: boolean;
   setIsOpen: (value: boolean) => void;
   sendMessage: (text: string) => void;
   clearMessages: () => void;
@@ -23,6 +27,7 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -32,7 +37,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     },
   ]);
 
-  const { filteredEvents } = useTimeline();
+  const { filteredEvents, setFilters } = useTimeline();
 
   // Function to generate a response based on the user's message
   const generateResponse = (userMessage: string): string => {
@@ -102,7 +107,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     return Array.from(categorySet);
   };
 
-  const sendMessage = (text: string) => {
+  const sendMessage = async (text: string) => {
     if (text.trim() === '') return;
     
     // Add user message
@@ -114,18 +119,85 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     };
     
     setMessages(prev => [...prev, userMessage]);
+    setIsProcessing(true);
     
-    // Generate and add bot response after a short delay
-    setTimeout(() => {
-      const responseText = generateResponse(text);
+    // Add a loading message first
+    const loadingMsgId = (Date.now() + 1).toString();
+    const loadingMessage: ChatMessage = {
+      id: loadingMsgId,
+      text: 'Analyzing your question...',
+      sender: 'bot',
+      timestamp: new Date(),
+      isLoading: true
+    };
+    
+    setMessages(prev => [...prev, loadingMessage]);
+    
+    try {
+      // Try to use OpenAI for advanced queries
+      const response = await processTimelineQuery(text, filteredEvents);
+      
+      let responseText: string;
+      let relatedEvents: TimelineEvent[] | undefined;
+      
+      if (response) {
+        // Use the AI-generated response
+        responseText = response.explanation;
+        relatedEvents = response.relevantEvents;
+        
+        // Highlight these events in the timeline by updating filters if needed
+        if (relatedEvents && relatedEvents.length > 0) {
+          // Determine what categories to show
+          const categoriesToShow = new Set<string>();
+          relatedEvents.forEach(event => {
+            event.category.forEach(cat => categoriesToShow.add(cat));
+          });
+          
+          // Update filters to focus on relevant events
+          setFilters(prevFilters => ({
+            ...prevFilters,
+            categories: Object.fromEntries(
+              Object.entries(prevFilters.categories).map(([cat, _]) => 
+                [cat, categoriesToShow.has(cat)]
+              )
+            )
+          }));
+        }
+      } else {
+        // Fall back to basic rule-based responses if OpenAI fails
+        responseText = generateResponse(text);
+      }
+      
+      // Replace loading message with actual response
       const botMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: loadingMsgId,
         text: responseText,
+        sender: 'bot',
+        timestamp: new Date(),
+        relatedEvents
+      };
+      
+      setMessages(prev => 
+        prev.map(msg => msg.id === loadingMsgId ? botMessage : msg)
+      );
+      
+    } catch (error) {
+      console.error('Error generating chat response:', error);
+      
+      // Replace with error message
+      const errorMessage: ChatMessage = {
+        id: loadingMsgId,
+        text: 'Sorry, I encountered an error while processing your question. Please try again.',
         sender: 'bot',
         timestamp: new Date()
       };
-      setMessages(prev => [...prev, botMessage]);
-    }, 1000);
+      
+      setMessages(prev => 
+        prev.map(msg => msg.id === loadingMsgId ? errorMessage : msg)
+      );
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const clearMessages = () => {
@@ -140,7 +212,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ChatContext.Provider value={{ messages, isOpen, setIsOpen, sendMessage, clearMessages }}>
+    <ChatContext.Provider value={{ messages, isOpen, isProcessing, setIsOpen, sendMessage, clearMessages }}>
       {children}
     </ChatContext.Provider>
   );

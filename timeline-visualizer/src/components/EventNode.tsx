@@ -4,8 +4,22 @@ import { TimelineEvent } from '@/types/timeline';
 import Image from 'next/image';
 import { format } from 'date-fns';
 
+import { useChat } from '@/contexts/ChatContext';
+
 // Our component receives the standard props from React Flow
 export default function EventNode({ data }: { data: { event: TimelineEvent } }) {
+  const { messages } = useChat();
+  
+  // Check if this event is highlighted by a chat query
+  const isHighlighted = React.useMemo(() => {
+    // Get the last bot message with related events
+    const lastBotMessageWithEvents = [...messages]
+      .reverse()
+      .find(msg => msg.sender === 'bot' && msg.relatedEvents && msg.relatedEvents.length > 0);
+    
+    // Check if this event is in the related events
+    return lastBotMessageWithEvents?.relatedEvents?.some(event => event.id === data.event.id) || false;
+  }, [messages, data.event.id]);
   // Make sure event data exists
   if (!data || !data.event) {
     console.error('No event data provided to EventNode');
@@ -37,23 +51,36 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
   // Get glow intensity based on importance
   const getGlowEffect = () => {
     const color = getImportanceColor();
-    const intensity = event.importance * 2;
+    const baseIntensity = event.importance * 2;
+    const intensity = isHighlighted ? baseIntensity * 2 : baseIntensity;
+    
+    if (isHighlighted) {
+      return `0 0 ${intensity}px ${color}, 0 0 ${intensity * 1.5}px rgba(255,255,255,0.5)`;
+    }
+    
     return `0 0 ${intensity}px ${color}, 0 0 ${intensity}px rgba(0,0,0,0.3)`;
   };
 
   return (
     <div 
-      className={`rounded-lg backdrop-blur-md bg-gray-900 bg-opacity-80 border transition-all duration-200 ${
+      className={`rounded-lg backdrop-blur-md border transition-all duration-200 ${
         expanded ? 'scale-105 z-50' : 'hover:scale-105'
-      }`}
+      } ${isHighlighted ? 'bg-indigo-950 bg-opacity-90' : 'bg-gray-900 bg-opacity-80'}`}
       style={{ 
         borderColor: getImportanceColor(),
         borderWidth: `${event.importance}px`,
         boxShadow: getGlowEffect(),
-        width: expanded ? '300px' : '220px'
+        width: expanded ? '300px' : '220px',
+        transform: isHighlighted ? 'translateY(-5px)' : 'none'
       }}
       onClick={handleClick}
     >
+      {/* Highlight indicator */}
+      {isHighlighted && (
+        <div className="absolute -top-2 -right-2 bg-white p-1 rounded-full animate-pulse z-10">
+          <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+        </div>
+      )}
       {/* Horizontal positioning handles */}
       <Handle type="target" position={Position.Left} style={{ visibility: 'hidden' }} />
       <Handle type="source" position={Position.Right} style={{ visibility: 'hidden' }} />

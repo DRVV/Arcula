@@ -1,24 +1,68 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+# Timeline Visualizer
+
+An interactive timeline visualization tool with AI-powered chat capabilities. Users can explore timeline events, filter by categories, and ask questions about the data using natural language.
+
+## Features
+
+- Interactive timeline visualization
+- Event filtering by category, importance, and date range
+- AI-powered chat assistant for querying timeline data
+- Automatic timeline updates based on relevant data from chat queries
+
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ 
+- npm or yarn
+- OpenAI API key
+
+### Setup
+
+1. Clone the repository
+2. Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Set up your OpenAI API key:
+   - Copy `.env.local.example` to `.env.local`
+   - Replace `your_openai_api_key_here` with your actual OpenAI API key
+
+```bash
+cp .env.local.example .env.local
+```
+
+4. Run the development server:
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Using the Chat Feature
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The timeline visualizer includes an AI-powered chat assistant that can:
+
+- Answer questions about events in the timeline
+- Identify and highlight relevant events based on your queries
+- Filter the timeline to focus on events related to your questions
+- Provide insights and explanations about timeline data
+
+Simply click on the chat icon in the bottom right corner to open the chat interface, then ask questions about the timeline data.
+
+Examples:
+- "Show me all events related to mobile hardware innovations"
+- "What were the most important milestones in smartphone development?"
+- "Tell me about network infrastructure events between 2010 and 2020"
 
 ## Learn More
 
