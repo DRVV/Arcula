@@ -6,7 +6,7 @@ export default function InfoPanel() {
   const [isOpen, setIsOpen] = useState(false);
   
   return (
-    <div className="fixed bottom-4 right-4 z-40">
+    <div className="fixed bottom-4 left-4 z-40">
       {/* Toggle Button - Always visible */}
       <button 
         onClick={() => setIsOpen(!isOpen)}

@@ -193,29 +193,7 @@ const TimeGrid = ({
                       strokeWidth={1 / zoom} 
                       strokeOpacity={monthOpacity}
                     />
-                    {zoom >= 1.0 && ( // Show month labels at a slightly lower zoom
-                      <g>
-                        <rect
-                          x={monthXPos - (1 / zoom)}
-                          y={viewportHeight / zoom - (45 / zoom)}
-                          width={24 / zoom}
-                          height={14 / zoom}
-                          rx={2 / zoom}
-                          fill="#1E40AF"
-                          fillOpacity={0.6}
-                        />
-                        <text 
-                          x={monthXPos + (3 / zoom)} 
-                          y={viewportHeight / zoom - (35 / zoom)}
-                          fontSize={9 / zoom} 
-                          fill="#7DD3FC"
-                          style={{ pointerEvents: 'none', userSelect: 'none' }}
-                          textAnchor="start"
-                        >
-                          {monthDate.toLocaleString('default', { month: 'short' })}
-                        </text>
-                      </g>
-                    )}
+                    {/* Month labels removed */}
                   </g>
                 );
               })}
@@ -323,7 +301,7 @@ const TimelineControls = () => {
 
   // Determine visible details based on zoom level
   const getZoomDetails = () => {
-    if (zoom >= 0.3) return "Years & Months";
+    if (zoom >= 0.3) return "Years & Month gridlines";
     return "Years only";
   };
   
@@ -404,18 +382,25 @@ const TimelineFlowInner = () => {
     setTimeRange({ minDate, maxDate, gridScale: 10000 });
   }, [filteredEvents]);
   
-  // Init and fit view
+  // Init and position nodes in view without changing zoom
   useEffect(() => {
     console.log(`Current view has ${nodes.length} nodes`);
     
-    // Delay fit view to ensure rendering is complete
+    // Delay positioning to ensure rendering is complete
     const timer = setTimeout(() => {
       if (reactFlowInstance && nodes.length > 0) {
-        console.log("Fitting view to nodes");
+        console.log("Positioning nodes in view while preserving zoom");
+        
+        // Get the current viewport zoom level
+        const { zoom } = reactFlowInstance.getViewport();
+        
+        // Use fitView but ensure it respects our desired zoom level
         reactFlowInstance.fitView({
           padding: 0.5,
           includeHiddenNodes: false,
-          duration: 800
+          duration: 800,
+          minZoom: zoom, // Don't zoom out further than current zoom
+          maxZoom: zoom  // Don't zoom in further than current zoom
         });
       }
     }, 500);
@@ -429,11 +414,12 @@ const TimelineFlowInner = () => {
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
-        fitView
+        // Remove fitView prop as it overrides our zoom setting
+        // fitView
         fitViewOptions={{ padding: 0.2 }}
-        minZoom={0.01}
+        minZoom={0.1}
         maxZoom={2}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.3 }}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.5 }}
         proOptions={{ hideAttribution: true }}
         snapToGrid={false}
         snapGrid={[20, 20]}
@@ -447,7 +433,7 @@ const TimelineFlowInner = () => {
           maxDate={timeRange.maxDate} 
           gridScale={timeRange.gridScale}
         />
-        <Controls className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-none shadow-lg rounded-lg" />
+        {/* <Controls className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-none shadow-lg rounded-lg" /> */}
         <MiniMap 
           className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-none shadow-lg rounded-lg"
           nodeColor={(node: any) => {
@@ -459,6 +445,8 @@ const TimelineFlowInner = () => {
             return '#3B82F6';
           }}
           maskColor="rgba(0, 0, 0, 0.2)"
+          position='bottom-left'
+          
         />
         <Panel position="top-right">
           <TimelineControls />
