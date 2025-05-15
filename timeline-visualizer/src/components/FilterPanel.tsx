@@ -28,7 +28,8 @@ interface FilterPanelProps {
 }
 
 export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  // Initialize panel to open state on first render for discoverability
+  const [isOpen, setIsOpen] = useState(true);
   const allCategories = extractCategories();
   
   // Format date to display year only
@@ -71,18 +72,19 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
       {/* Toggle Button */}
       <button 
         onClick={togglePanel}
-        className="absolute right-0 top-0 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-r-lg shadow-lg transition-colors"
+        className="absolute right-0 top-0 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-r-lg shadow-lg transition-colors flex items-center justify-center"
         style={{ width: '3rem', height: '3.5rem' }}
       >
-        {isOpen ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-          </svg>
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-          </svg>
-        )}
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-6 w-6 transition-transform duration-300" 
+          style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+        </svg>
       </button>
       
       {/* Filter Panel */}

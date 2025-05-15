@@ -6,6 +6,16 @@ import { format } from 'date-fns';
 
 // Our component receives the standard props from React Flow
 export default function EventNode({ data }: { data: { event: TimelineEvent } }) {
+  // Make sure event data exists
+  if (!data || !data.event) {
+    console.error('No event data provided to EventNode');
+    return (
+      <div className="bg-red-500 p-2 rounded-md">
+        <p className="text-white">Error: Missing event data</p>
+      </div>
+    );
+  }
+  
   const event = data.event;
   const [expanded, setExpanded] = useState(false);
   
@@ -27,20 +37,20 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
   // Get glow intensity based on importance
   const getGlowEffect = () => {
     const color = getImportanceColor();
-    const intensity = event.importance * 3;
-    return `0 0 ${intensity}px ${color}, 0 0 ${intensity * 2}px rgba(0,0,0,0.3)`;
+    const intensity = event.importance * 2;
+    return `0 0 ${intensity}px ${color}, 0 0 ${intensity}px rgba(0,0,0,0.3)`;
   };
 
   return (
     <div 
-      className={`rounded-lg backdrop-blur-md bg-gray-900 bg-opacity-70 border transition-all duration-300 ${
-        expanded ? 'scale-110 z-50' : 'hover:scale-105'
+      className={`rounded-lg backdrop-blur-md bg-gray-900 bg-opacity-80 border transition-all duration-200 ${
+        expanded ? 'scale-105 z-50' : 'hover:scale-105'
       }`}
       style={{ 
         borderColor: getImportanceColor(),
         borderWidth: `${event.importance}px`,
         boxShadow: getGlowEffect(),
-        maxWidth: expanded ? '350px' : '250px'
+        width: expanded ? '300px' : '220px'
       }}
       onClick={handleClick}
     >
@@ -62,9 +72,9 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
         
         <h3 className="text-lg font-semibold text-white mb-2">{event.title}</h3>
         
-        {/* Categories */}
+        {/* Categories - limit to 3 for space */}
         <div className="flex flex-wrap gap-1 my-2">
-          {event.category.map((cat: string) => (
+          {event.category.slice(0, 3).map((cat: string) => (
             <span 
               key={cat} 
               className="px-2 py-0.5 rounded-md text-xs bg-gray-800 text-gray-300 border-l-2"
@@ -73,6 +83,9 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
               {cat}
             </span>
           ))}
+          {event.category.length > 3 && (
+            <span className="text-xs text-gray-400">+{event.category.length - 3} more</span>
+          )}
         </div>
         
         {/* Only show description and media when expanded */}

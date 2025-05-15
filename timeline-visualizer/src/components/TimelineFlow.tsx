@@ -20,6 +20,7 @@ import '@xyflow/react/dist/style.css';
 import { TimelineEvent, FilterState } from '@/types/timeline';
 import EventNode from './EventNode';
 import FilterPanel from './FilterPanel';
+import InfoPanel from './InfoPanel';
 import { timelineEvents } from '@/data/timelineEvents';
 import { format } from 'date-fns';
 
@@ -70,40 +71,43 @@ const filterEvents = (events: TimelineEvent[], filters: FilterState): TimelineEv
 
 // Function to create nodes and edges from timeline events
 const createNodesAndEdges = (events: TimelineEvent[], filtered: boolean = false) => {
+  // Handle empty events array
+  if (events.length === 0) {
+    return { nodes: [], edges: [] };
+  }
+  
   // Sort events by date
   const sortedEvents = [...events].sort((a, b) => a.date.getTime() - b.date.getTime());
   
   // Find earliest and latest dates for scaling
   const earliestDate = sortedEvents[0].date.getTime();
   const latestDate = sortedEvents[sortedEvents.length - 1].date.getTime();
-  const timeRange = latestDate - earliestDate;
+  const timeRange = Math.max(latestDate - earliestDate, 1); // Avoid division by zero
   
-  // Calculate horizontal spacing - map dates to x positions from 0 to 5000
-  const xScale = 5000 / timeRange;
+  // Log the events to make sure they're being filtered correctly
+  console.log(`Processing ${sortedEvents.length} events`);
+
+  // Simpler node creation with basic positioning
+  const nodes: Node[] = [];
   
-  // Create nodes
-  const nodes: Node[] = sortedEvents.map((event, index) => {
-    // Calculate x position based on date
-    const x = (event.date.getTime() - earliestDate) * xScale;
+  // Create nodes with fixed spacing
+  for (let i = 0; i < sortedEvents.length; i++) {
+    const event = sortedEvents[i];
     
-    // Alternate Y position for better readability with more vertical spacing
-    const y = 200 + (index % 3) * 150;
-    
-    // Adjust size based on importance
-    const scale = 0.8 + (event.importance * 0.1);
-    
-    return {
+    nodes.push({
       id: event.id,
       type: 'timelineEvent',
-      position: { x, y },
-      data: { event },
-      // For styling
-      style: {
-        transform: `scale(${scale})`,
-        zIndex: event.importance,
+      position: { 
+        x: i * 400, 
+        y: 200 + (i % 2) * 150 
       },
-    };
-  });
+      data: { event },
+      draggable: false,
+    });
+  }
+
+  // Log the created nodes to debug
+  console.log(`Created ${nodes.length} nodes`);
   
   // Create edges connecting events chronologically
   const edges: Edge[] = [];
@@ -156,6 +160,7 @@ const TimelineControls = () => {
 
 // The main timeline visualization component
 const TimelineFlowInner = () => {
+  const reactFlowInstance = useReactFlow();
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [filters, setFilters] = useState<FilterState>({
@@ -173,6 +178,25 @@ const TimelineFlowInner = () => {
     setEdges(edges);
   }, [filters]);
   
+  // Init and fit view
+  useEffect(() => {
+    console.log(`Current view has ${nodes.length} nodes`);
+    
+    // Delay fit view to ensure rendering is complete
+    const timer = setTimeout(() => {
+      if (reactFlowInstance && nodes.length > 0) {
+        console.log("Fitting view to nodes");
+        reactFlowInstance.fitView({
+          padding: 0.5,
+          includeHiddenNodes: false,
+          duration: 800
+        });
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [nodes, reactFlowInstance]);
+  
   return (
     <div style={{ width: '100%', height: '100vh' }} className="bg-gray-950">
       <ReactFlow
@@ -180,10 +204,15 @@ const TimelineFlowInner = () => {
         edges={edges}
         nodeTypes={nodeTypes}
         fitView
-        minZoom={0.1}
+        fitViewOptions={{ padding: 0.2 }}
+        minZoom={0.05}
         maxZoom={2}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.5 }}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.3 }}
         proOptions={{ hideAttribution: true }}
+        snapToGrid={false}
+        snapGrid={[20, 20]}
+        elevateNodesOnSelect={true}
+        nodesDraggable={false}
       >
         {/* Filter Panel */}
         <FilterPanel filters={filters} onChange={setFilters} />
@@ -204,6 +233,9 @@ const TimelineFlowInner = () => {
         <Panel position="top-right">
           <TimelineControls />
         </Panel>
+        
+        {/* Info Panel */}
+        <InfoPanel />
         
         {/* Time period markers */}
         <Panel position="bottom-center" className="w-full flex justify-center px-10 py-2 bg-gray-900 bg-opacity-80 backdrop-blur-sm">
