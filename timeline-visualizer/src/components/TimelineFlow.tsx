@@ -446,7 +446,9 @@ const TimelineFlowInner = () => {
           }}
           maskColor="rgba(0, 0, 0, 0.2)"
           position='bottom-left'
-          
+          style={{ height: 120, width: 240 }}
+          zoomable
+          pannable
         />
         <Panel position="top-right">
           <TimelineControls />
