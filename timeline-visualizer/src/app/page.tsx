@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import HamburgerMenu from '@/components/HamburgerMenu';
 import FilterPanel from '@/components/FilterPanel';
-import ChatWindow from '@/components/ChatWindow';
+import ChainlitCopilot from '@/components/ChainlitCopilot';
 
 // Use dynamic import with SSR disabled for React Flow
 // This is necessary because React Flow uses browser APIs
@@ -80,7 +80,7 @@ const HomePageContent = () => {
       {/* Add padding-top to account for the fixed header */}
       <main className="w-full h-full pt-14">
         <TimelineFlow />
-        <ChatWindow />
+        <ChainlitCopilot />
       </main>
     </div>
   );

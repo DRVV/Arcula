@@ -1,120 +1,111 @@
 @import "tailwindcss";
 
+@theme {
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --color-background: #0a0a0a;
+  --color-foreground: #ededed;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  
-  /* Futuristic theme colors */
-  --primary-glow: rgba(57, 133, 255, 0.35);
-  --secondary-glow: rgba(147, 51, 234, 0.35);
-  --accent-blue: #3B82F6;
-  --accent-purple: #8B5CF6;
-  --accent-pink: #EC4899;
-  --cyber-dark: #0F172A;
-  --cyber-darker: #020617;
-  --cyber-grid: #1E293B;
-  --cyber-text: #E2E8F0;
-}
-
-/* Hide Next.js icon */
-[data-nextjs-dialog-supporting],
-[data-nextjs-dialog-banner] {
-  display: none !important;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: var(--cyber-darker);
-    --foreground: var(--cyber-text);
-  }
+  --background: var(--color-background);
+  --foreground: var(--color-foreground);
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Futuristic UI Elements */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+.text-balance {
+  text-wrap: balance;
 }
 
-.glow-text {
-  text-shadow: 0 0 10px var(--primary-glow);
-}
-
-.cyber-grid {
-  background-size: 50px 50px;
-  background-image: 
-    linear-gradient(to right, rgba(30, 41, 59, 0.3) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
-}
-
-/* Custom scrollbar */
+/* Custom scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(30, 41, 59, 0.2);
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.5);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.8);
+  background: rgba(255, 255, 255, 0.3);
 }
 
-/* React Flow Customizations */
-.react-flow__node {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+/* Chat scrollbar specific styling */
+.chat-scroll::-webkit-scrollbar {
+  width: 6px;
 }
 
-.react-flow__node:hover {
-  z-index: 100;
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
 }
 
-.react-flow__edge path {
-  stroke-dasharray: 5, 5;
-  animation: flowAnimation 30s linear infinite;
+/* Timeline event container styling */
+.timeline-event-container {
+  @apply relative;
+  z-index: 10;
 }
 
-@keyframes flowAnimation {
-  to {
-    stroke-dashoffset: -1000;
+.timeline-event-container .speech-bubble-container {
+  @apply absolute;
+  z-index: 30;
+  pointer-events: auto;
+}
+
+/* Speech bubble floating animation */
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px); 
+  }
+  50% { 
+    transform: translateY(-5px); 
   }
 }
 
-/* Futuristic gradient animations */
-.cyber-gradient {
-  background: linear-gradient(-45deg, var(--accent-blue), var(--accent-purple), var(--accent-pink), var(--accent-blue));
-  background-size: 400% 400%;
-  animation: gradient 15s ease infinite;
+/* Delayed appearance for speech bubbles */
+.speech-bubble-appear {
+  animation: appearAndFloat 0.8s ease-out forwards;
 }
 
-@keyframes gradient {
+@keyframes appearAndFloat {
   0% {
-    background-position: 0% 50%;
+    opacity: 0;
+    transform: translateY(15px) scale(0.8);
   }
-  50% {
-    background-position: 100% 50%;
+  60% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.05);
   }
   100% {
-    background-position: 0% 50%;
+    opacity: 1;
+    transform: translateY(0px) scale(1);
   }
+}
+
+/* React Flow specific overrides */
+.react-flow__node {
+  z-index: 10 !important;
+}
+
+.react-flow__node.selected {
+  z-index: 20 !important;
+}
+
+/* Ensure speech bubbles appear above other elements */
+.react-flow__pane {
+  overflow: visible !important;
+}
+
+.react-flow__viewport {
+  overflow: visible !important;
 }

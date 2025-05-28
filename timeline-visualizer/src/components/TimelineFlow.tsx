@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { 
   ReactFlow,
-  Controls,
   Edge,
   Node,
   NodeTypes,
@@ -11,36 +10,19 @@ import {
   useReactFlow,
   MiniMap,
   Panel,
-  BackgroundVariant,
-  PanelPosition,
-  useViewport,
-  useStore
+  useViewport
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import { TimelineEvent } from '@/types/timeline';
 import EventNode from './EventNode';
 import { useTimeline } from '@/contexts/TimelineContext';
-import { timelineEvents } from '@/data/timelineEvents';
-import { format } from 'date-fns';
 
 // Register custom node types
 const nodeTypes: NodeTypes = {
   timelineEvent: EventNode,
 };
 
-
-// Helper function to get the first day of a month
-const getFirstDayOfMonth = (date: Date): Date => {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
-};
-
-// Helper function to add months to a date
-const addMonths = (date: Date, months: number): Date => {
-  const result = new Date(date);
-  result.setMonth(result.getMonth() + months);
-  return result;
-};
 
 // Helper function to format a date as YYYY-MM
 const formatYearMonth = (date: Date): string => {
@@ -229,9 +211,10 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
   // Log the events to make sure they're being filtered correctly
   console.log(`Processing ${sortedEvents.length} events from ${minDate.toISOString()} to ${maxDate.toISOString()}`);
 
-  // Position nodes based on their exact dates
+  // Position timeline event nodes based on their exact dates
   const nodes: Node[] = [];
   const rowAssignments: { [key: string]: number } = {}; // Track which rows are used for each month
+  const eventNodePositions: { [key: string]: { x: number; y: number } } = {}; // Store positions for reaction placement
   
   for (let i = 0; i < sortedEvents.length; i++) {
     const event = sortedEvents[i];
@@ -253,6 +236,9 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
     // Y position alternates between two rows
     const y = 200 + row * 150;
     
+    // Store position for reaction placement
+    eventNodePositions[event.id] = { x, y };
+    
     nodes.push({
       id: event.id,
       type: 'timelineEvent',
@@ -263,12 +249,12 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
         maxDate,
         gridScale
       },
-      draggable: false,
+      draggable: true,
     });
   }
 
   // Log the created nodes to debug
-  console.log(`Created ${nodes.length} nodes with time-based positioning`);
+  console.log(`Created ${nodes.length} nodes`);
   
   // Create edges connecting events chronologically
   const edges: Edge[] = [];
@@ -286,6 +272,8 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
       animated: true,
     });
   }
+  
+
   
   return { nodes, edges, minDate, maxDate };
 };
@@ -364,7 +352,7 @@ const TimelineControls = () => {
   // The main timeline visualization component
 const TimelineFlowInner = () => {
   const reactFlowInstance = useReactFlow();
-  const { x, y, zoom } = useViewport();
+  const { zoom: currentZoom } = useViewport();
   const { filteredEvents } = useTimeline();
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
@@ -373,6 +361,26 @@ const TimelineFlowInner = () => {
     maxDate: new Date(2025, 0, 1),
     gridScale: 10000
   });
+  
+  // Handle node drag events
+  const onNodesChange = useCallback((changes: any) => {
+    setNodes((nds) => {
+      // Apply node changes (position updates from dragging)
+      const updatedNodes = [...nds];
+      changes.forEach((change: any) => {
+        if (change.type === 'position' && change.position) {
+          const nodeIndex = updatedNodes.findIndex(n => n.id === change.id);
+          if (nodeIndex !== -1) {
+            updatedNodes[nodeIndex] = {
+              ...updatedNodes[nodeIndex],
+              position: change.position
+            };
+          }
+        }
+      });
+      return updatedNodes;
+    });
+  }, []);
   
   // Create nodes/edges whenever filteredEvents changes
   useEffect(() => {
@@ -409,11 +417,12 @@ const TimelineFlowInner = () => {
   }, [nodes, reactFlowInstance]);
   
   return (
-    <div style={{ width: '100%', height: '100vh' }} className="bg-gray-950">
+    <div style={{ width: '100%', height: '100%' }} className="bg-gray-950">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        onNodesChange={onNodesChange}
         // Remove fitView prop as it overrides our zoom setting
         // fitView
         fitViewOptions={{ padding: 0.2 }}
@@ -424,7 +433,10 @@ const TimelineFlowInner = () => {
         snapToGrid={false}
         snapGrid={[20, 20]}
         elevateNodesOnSelect={true}
-        nodesDraggable={false}
+        nodesDraggable={true}
+        nodesFocusable={true}
+        edgesFocusable={false}
+        panOnDrag={false}
       >
         
         {/* Custom time grid that transforms with viewport */}
@@ -436,8 +448,8 @@ const TimelineFlowInner = () => {
         {/* <Controls className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-none shadow-lg rounded-lg" /> */}
         <MiniMap 
           className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-none shadow-lg rounded-lg"
-          nodeColor={(node: any) => {
-            const importance = node.data?.event?.importance;
+          nodeColor={(node: Node) => {
+            const importance = (node.data as any)?.event?.importance;
             if (importance === 5) return '#EF4444';
             if (importance === 4) return '#F97316';
             if (importance === 3) return '#EAB308';

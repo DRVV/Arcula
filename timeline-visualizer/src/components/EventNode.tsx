@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import React, { useState, useMemo } from 'react';
+import { Handle, Position } from '@xyflow/react';
 import { TimelineEvent } from '@/types/timeline';
-import Image from 'next/image';
 import { format } from 'date-fns';
 
 import { useChat } from '@/contexts/ChatContext';
+import SpeechBubble from './SpeechBubble';
+import { reactionData } from '@/data/reactionData';
 
 // Our component receives the standard props from React Flow
 export default function EventNode({ data }: { data: { event: TimelineEvent } }) {
   const { messages } = useChat();
+  const [expanded, setExpanded] = useState(false);
   
   // Check if this event is highlighted by a chat query
   const isHighlighted = React.useMemo(() => {
+    if (!data?.event) return false;
     // Get the last bot message with generated events
     const lastBotMessageWithEvents = [...messages]
       .reverse()
@@ -19,7 +22,14 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
     
     // Check if this event is in the generated events
     return lastBotMessageWithEvents?.generatedEvents?.some(event => event.id === data.event.id) || false;
-  }, [messages, data.event.id]);
+  }, [messages, data?.event?.id]);
+  
+  // Find reaction data for this event
+  const eventReaction = useMemo(() => {
+    if (!data?.event?.id) return undefined;
+    return reactionData.find(reaction => reaction.eventId === data.event.id);
+  }, [data?.event?.id]);
+  
   // Make sure event data exists
   if (!data || !data.event) {
     console.error('No event data provided to EventNode');
@@ -31,10 +41,12 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
   }
   
   const event = data.event;
-  const [expanded, setExpanded] = useState(false);
   
-  const handleClick = () => {
-    setExpanded(!expanded);
+  const handleClick = (e: React.MouseEvent) => {
+    // Only expand/collapse if this was actually a click, not a drag
+    if (e.detail === 1) {
+      setExpanded(!expanded);
+    }
   };
   
   // Set color based on importance
@@ -62,31 +74,32 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
   };
 
   return (
-    <div 
-      className={`rounded-lg backdrop-blur-md border transition-all duration-200 ${
-        expanded ? 'scale-105 z-50' : 'hover:scale-105'
-      } ${isHighlighted ? 'bg-indigo-950 bg-opacity-90' : 'bg-gray-900 bg-opacity-80'}`}
-      style={{ 
-        borderColor: getImportanceColor(),
-        borderWidth: `${event.importance}px`,
-        boxShadow: getGlowEffect(),
-        width: expanded ? '300px' : '220px',
-        transform: isHighlighted ? 'translateY(-5px)' : 'none'
-      }}
-      onClick={handleClick}
-    >
-      {/* Highlight indicator */}
-      {isHighlighted && (
-        <div className="absolute -top-2 -right-2 bg-white p-1 rounded-full animate-pulse z-10">
-          <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-        </div>
-      )}
-      {/* Horizontal positioning handles */}
-      <Handle type="target" position={Position.Left} style={{ visibility: 'hidden' }} />
-      <Handle type="source" position={Position.Right} style={{ visibility: 'hidden' }} />
+    <div className="relative timeline-event-container">
+      <div 
+        className={`rounded-lg backdrop-blur-md border transition-all duration-200 ${
+          expanded ? 'scale-105 z-20' : 'hover:scale-105'
+        } ${isHighlighted ? 'bg-indigo-950 bg-opacity-90' : 'bg-gray-900 bg-opacity-80'}`}
+        style={{ 
+          borderColor: getImportanceColor(),
+          borderWidth: `${event.importance}px`,
+          boxShadow: getGlowEffect(),
+          width: expanded ? '300px' : '220px',
+          transform: isHighlighted ? 'translateY(-5px)' : 'none'
+        }}
+        onClick={handleClick}
+      >
+        {/* Highlight indicator */}
+        {isHighlighted && (
+          <div className="absolute -top-2 -right-2 bg-white p-1 rounded-full animate-pulse z-10">
+            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+          </div>
+        )}
+        {/* Horizontal positioning handles */}
+        <Handle type="target" position={Position.Left} style={{ visibility: 'hidden' }} />
+        <Handle type="source" position={Position.Right} style={{ visibility: 'hidden' }} />
       
       <div className="p-4">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-3">
           <div className="text-xs text-gray-400 font-mono bg-gray-800 px-2 py-1 rounded-md">
             {format(event.date, 'MMM d, yyyy')}
           </div>
@@ -97,7 +110,45 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
           </div>
         </div>
         
-        <h3 className="text-lg font-semibold text-white mb-2">{event.title}</h3>
+        {/* Image display - always visible when available */}
+        {event.media && event.media[0] ? (
+          <div className="mb-3 relative w-full h-32 rounded-lg overflow-hidden border border-gray-700 bg-gray-800">
+            {event.media[0].type === 'image' && (
+              <img
+                src={event.media[0].url}
+                alt={event.media[0].caption || event.title}
+                className="object-cover w-full h-full transition-transform duration-200 hover:scale-105"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    parent.innerHTML = `<div class="flex items-center justify-center h-full text-gray-500 text-sm"><svg class="w-8 h-8 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path></svg>Image unavailable</div>`;
+                  }
+                }}
+              />
+            )}
+            {event.media[0].caption && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                <div className="text-xs text-white/90">
+                  {event.media[0].caption}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Elegant fallback for events without images */
+          <div className="mb-3 relative w-full h-20 rounded-lg border-2 border-dashed border-gray-600 bg-gray-800/50 flex items-center justify-center">
+            <div className="text-gray-500 text-center">
+              <svg className="w-6 h-6 mx-auto mb-1 opacity-50" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd"></path>
+              </svg>
+              <div className="text-xs font-mono opacity-75">{event.category[0] || 'milestone'}</div>
+            </div>
+          </div>
+        )}
+        
+        <h3 className="text-base font-medium text-white mb-2 leading-tight">{event.title}</h3>
         
         {/* Categories - limit to 3 for space */}
         <div className="flex flex-wrap gap-1 my-2">
@@ -119,26 +170,6 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
         {expanded && (
           <div className="mt-3 pt-3 border-t border-gray-700">
             <p className="text-sm text-gray-300 leading-relaxed">{event.description}</p>
-            
-            {/* Media display */}
-            {event.media && event.media[0] && (
-              <div className="mt-4 relative w-full h-36 rounded-lg overflow-hidden border border-gray-700">
-                {event.media[0].type === 'image' && (
-                  <div className="relative w-full h-full">
-                    <img
-                      src={event.media[0].url}
-                      alt={event.media[0].caption || event.title}
-                      className="object-contain w-full h-full"
-                    />
-                  </div>
-                )}
-                {event.media[0].caption && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-80 backdrop-blur-sm p-2 text-xs text-white">
-                    {event.media[0].caption}
-                  </div>
-                )}
-              </div>
-            )}
             
             {/* Links */}
             {event.links && event.links.length > 0 && (
@@ -162,6 +193,17 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
           </div>
         )}
       </div>
+      </div>
+      
+      {/* Render speech bubble if reaction data exists */}
+      {eventReaction && (
+        <div className="speech-bubble-container">
+          <SpeechBubble 
+            reaction={eventReaction} 
+            position="bottom"
+          />
+        </div>
+      )}
     </div>
   );
 }
