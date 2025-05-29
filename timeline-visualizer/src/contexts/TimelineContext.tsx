@@ -63,13 +63,74 @@ export function TimelineProvider({ children }: { children: ReactNode }) {
       
       // Log how many new events we're adding
       if (filteredNewEvents.length > 0) {
-        console.log(`Adding ${filteredNewEvents.length} new events to timeline`);
+        console.log(`📊 Adding ${filteredNewEvents.length} new events to timeline`);
+        filteredNewEvents.forEach(event => {
+          console.log(`  - ${event.title} (${event.category.join(', ')})`);
+        });
+        console.log(`📊 Total events after addition: ${prev.length + filteredNewEvents.length}`);
       }
       
       return [...prev, ...filteredNewEvents];
     });
   };
   
+  // Manual test function to create chat history - for debugging
+  const createTestChatHistory = () => {
+    console.log('🧪 MANUAL TEST: Creating test chat history event');
+    const testChatEvent: TimelineEvent = {
+      id: `test-chat-${Date.now()}`,
+      date: new Date(),
+      title: `TEST Chat Session - ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+      description: '[15:30] User: Hello\n[15:30] Bot: Hi there! How can I help you today?\n[15:31] User: Tell me about space exploration\n[15:31] Bot: Space exploration began with early astronomical observations...',
+      category: ['chat-history'],
+      importance: 3
+    };
+    addEvents([testChatEvent]);
+  };
+  
+  // Expose the test function globally for debugging
+  if (typeof window !== 'undefined') {
+    (window as any).createTestChatHistory = createTestChatHistory;
+  }
+  
+  // State to track when to create chat history event
+  const [lastProcessedMessageId, setLastProcessedMessageId] = useState<string | null>(null);
+
+  // Function to create a chat history timeline event
+  const createChatHistoryEvent = (messages: any[]): TimelineEvent => {
+    // Filter out initial bot greeting and loading messages
+    const conversationMessages = messages.filter(msg => 
+      !msg.isLoading && 
+      !(msg.sender === 'bot' && msg.text.includes('Hello! Ask me about any historical events'))
+    );
+    
+    // Format chat history with timestamps
+    const chatHistory = conversationMessages
+      .map(msg => {
+        const time = msg.timestamp.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        const sender = msg.sender === 'user' ? 'User' : 'Bot';
+        return `[${time}] ${sender}: ${msg.text}`;
+      })
+      .join('\n');
+    
+    const sessionTime = new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
+    return {
+      id: `chat-session-${Date.now()}`,
+      date: new Date(),
+      title: `Chat Session - ${sessionTime}`,
+      description: chatHistory,
+      category: ['chat-history'],
+      importance: 3
+    };
+  };
+
   // Listen for new generated events from messages
   useEffect(() => {
     if (messages) {
@@ -94,15 +155,22 @@ export function TimelineProvider({ children }: { children: ReactNode }) {
             // Create updated categories object that includes any new categories
             const updatedCategories = { ...prevFilters.categories };
             
-            // Set all existing categories to false initially
+            // Set all existing categories to false initially, BUT preserve chat-history
             Object.keys(updatedCategories).forEach(cat => {
-              updatedCategories[cat] = false;
+              if (cat !== 'chat-history') {
+                updatedCategories[cat] = false;
+              }
             });
             
             // Enable categories from generated events
             categoriesToShow.forEach(cat => {
               updatedCategories[cat] = true;
             });
+            
+            // Always ensure chat-history is enabled if it exists
+            if (updatedCategories['chat-history'] !== undefined) {
+              updatedCategories['chat-history'] = true;
+            }
             
             return {
               ...prevFilters,
@@ -113,6 +181,38 @@ export function TimelineProvider({ children }: { children: ReactNode }) {
       }
     }
   }, [messages]);
+
+  // Listen for chat session completion (when bot finishes responding)
+  useEffect(() => {
+    console.log('🔄 Chat completion listener triggered, messages count:', messages?.length || 0);
+    if (messages && messages.length > 1) {
+      const lastMessage = messages[messages.length - 1];
+      
+      // Check if last message is from bot, not loading, and we haven't processed this message yet
+      if (lastMessage.sender === 'bot' && 
+          !lastMessage.isLoading && 
+          lastMessage.id !== lastProcessedMessageId) {
+        
+        // Only create chat history if there are actual user interactions (not just the greeting)
+        const userMessages = messages.filter(msg => msg.sender === 'user');
+        
+        if (userMessages.length > 0) {
+          console.log('🎯 Chat session completed! Creating timeline event with', userMessages.length, 'user messages');
+          console.log('💬 Last message:', lastMessage.text.substring(0, 50) + '...');
+          
+          // Create and add chat history event
+          const chatHistoryEvent = createChatHistoryEvent(messages);
+          console.log('📅 Created chat history event:', chatHistoryEvent.title);
+          addEvents([chatHistoryEvent]);
+          
+          // Mark this message as processed
+          setLastProcessedMessageId(lastMessage.id);
+          
+          console.log('✅ Chat history successfully added to timeline!');
+        }
+      }
+    }
+  }, [messages, lastProcessedMessageId]);
 
   // Update categories and date range when events change
   useEffect(() => {
@@ -162,6 +262,16 @@ export function TimelineProvider({ children }: { children: ReactNode }) {
 
   // Pre-filter the events based on current filters
   const filteredEvents = filterEvents(allEvents, filters);
+  
+  // Log filtering results for debugging
+  useEffect(() => {
+    console.log(`🔍 Filter Update:`);
+    console.log(`  - Total events: ${allEvents.length}`);
+    console.log(`  - Filtered events: ${filteredEvents.length}`);
+    console.log(`  - Active categories:`, Object.entries(filters.categories).filter(([_, enabled]) => enabled).map(([cat, _]) => cat));
+    console.log(`  - Chat history events in total:`, allEvents.filter(e => e.category.includes('chat-history')).length);
+    console.log(`  - Chat history events in filtered:`, filteredEvents.filter(e => e.category.includes('chat-history')).length);
+  }, [allEvents, filteredEvents, filters.categories]);
 
   // Provide the context value to children
   return (

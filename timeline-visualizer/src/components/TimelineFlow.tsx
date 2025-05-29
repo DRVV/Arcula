@@ -384,7 +384,14 @@ const TimelineFlowInner = () => {
   
   // Create nodes/edges whenever filteredEvents changes
   useEffect(() => {
+    console.log(`🎨 TimelineFlow: Creating nodes from ${filteredEvents.length} filtered events`);
+    filteredEvents.forEach(event => {
+      console.log(`  - ${event.title} (${event.category.join(', ')})`);
+    });
+    
     const { nodes, edges, minDate, maxDate } = createNodesAndEdges(filteredEvents);
+    console.log(`🎨 TimelineFlow: Created ${nodes.length} nodes and ${edges.length} edges`);
+    
     setNodes(nodes);
     setEdges(edges);
     setTimeRange({ minDate, maxDate, gridScale: 10000 });

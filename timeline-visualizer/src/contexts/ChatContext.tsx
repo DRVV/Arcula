@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { TimelineEvent } from '@/types/timeline';
 import { processTimelineQuery } from '@/services/openaiService';
 import { timelineEvents } from '@/data/timelineEvents';

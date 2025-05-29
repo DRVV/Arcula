@@ -1,9 +1,31 @@
 'use client';
 
 import { useState } from 'react';
+import { useTimeline } from '@/contexts/TimelineContext';
+import { TimelineEvent } from '@/types/timeline';
 
 const ChainlitCopilot = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { addEvents } = useTimeline();
+  
+  // Manual function to create chat history for testing
+  const createChainlitChatHistory = () => {
+    const chatEvent: TimelineEvent = {
+      id: `chainlit-chat-${Date.now()}`,
+      date: new Date(),
+      title: `Chainlit Chat Session - ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+      description: `[${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}] User: Hello\n[${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}] Assistant: Hi! How can I help you today?\n[${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}] User: Tell me about the timeline\n[${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}] Assistant: This timeline shows historical events...`,
+      category: ['chat-history'],
+      importance: 3 as 3
+    };
+    console.log('📱 Creating Chainlit chat history manually');
+    addEvents([chatEvent]);
+  };
+  
+  // Expose function globally for console testing
+  if (typeof window !== 'undefined') {
+    (window as any).createChainlitChatHistory = createChainlitChatHistory;
+  }
 
   return (
     <>
@@ -38,7 +60,16 @@ const ChainlitCopilot = () => {
             </svg>
             Chainlit Chat
           </h3>
-          <span className="w-3 h-3 bg-green-500 rounded-full shadow-inner"></span>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={createChainlitChatHistory}
+              className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+              title="Add current chat to timeline"
+            >
+              📅 Add to Timeline
+            </button>
+            <span className="w-3 h-3 bg-green-500 rounded-full shadow-inner"></span>
+          </div>
         </div>
         
         {/* Chainlit iframe container */}
