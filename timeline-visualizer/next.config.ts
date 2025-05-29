@@ -19,11 +19,9 @@ const nextConfig: NextConfig = {
     ];
   },
   // Turbopack configuration (replaces webpack config)
-  experimental: {
-    turbo: {
-      // Turbopack handles Node.js module fallbacks automatically
-      // No need for manual fs, net, tls fallbacks
-    },
+  turbopack: {
+    // Turbopack handles Node.js module fallbacks automatically
+    // No need for manual fs, net, tls fallbacks
   },
 };
 
