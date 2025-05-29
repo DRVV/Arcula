@@ -74,6 +74,73 @@ export function TimelineProvider({ children }: { children: ReactNode }) {
     });
   };
   
+  // Function to convert API events to TimelineEvent format
+  const convertApiEventsToTimelineEvents = (apiEvents: any[]): TimelineEvent[] => {
+    return apiEvents.map(event => ({
+      ...event,
+      date: new Date(event.date), // Convert string date to Date object
+      importance: event.importance as 1 | 2 | 3 | 4 | 5
+    }));
+  };
+  
+  // Function to poll for new graph data from Chainlit
+  const pollForGraphData = async () => {
+    try {
+      const response = await fetch('/api/graph-data/latest');
+      const data = await response.json();
+      
+      if (data.hasData && data.events && data.events.length > 0) {
+        console.log(`🎯 Received ${data.events.length} new events from Chainlit via API`);
+        console.log('📋 Graph data source:', data.raw_content.substring(0, 100) + '...');
+        
+        // Convert API events to proper TimelineEvent format
+        const timelineEvents = convertApiEventsToTimelineEvents(data.events);
+        
+        // Add events to timeline
+        addEvents(timelineEvents);
+        
+        // Update filters to show new categories
+        const newCategories = new Set<string>();
+        timelineEvents.forEach(event => {
+          event.category.forEach(cat => newCategories.add(cat));
+        });
+        
+        if (newCategories.size > 0) {
+          setFilters(prevFilters => {
+            const updatedCategories = { ...prevFilters.categories };
+            newCategories.forEach(cat => {
+              updatedCategories[cat] = true; // Enable new categories
+            });
+            return {
+              ...prevFilters,
+              categories: updatedCategories
+            };
+          });
+        }
+        
+        console.log('✅ Successfully processed graph data from Chainlit!');
+      }
+    } catch (error) {
+      // Silently handle polling errors - don't spam console
+      // Only log if there's actually an error (not just no data)
+      if (error instanceof Error && !error.message.includes('fetch')) {
+        console.warn('⚠️ Error polling for graph data:', error.message);
+      }
+    }
+  };
+  
+  // Set up polling for graph data from Chainlit
+  useEffect(() => {
+    // Poll every 2 seconds for new graph data
+    const interval = setInterval(pollForGraphData, 2000);
+    
+    // Also poll immediately
+    pollForGraphData();
+    
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
+  }, []);
+  
   // Manual test function to create chat history - for debugging
   const createTestChatHistory = () => {
     console.log('🧪 MANUAL TEST: Creating test chat history event');
