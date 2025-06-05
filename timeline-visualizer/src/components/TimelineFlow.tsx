@@ -10,7 +10,9 @@ import {
   useReactFlow,
   MiniMap,
   Panel,
-  useViewport
+  useViewport,
+  useNodesState,
+  useEdgesState
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -354,33 +356,13 @@ const TimelineFlowInner = () => {
   const reactFlowInstance = useReactFlow();
   const { zoom: currentZoom } = useViewport();
   const { filteredEvents } = useTimeline();
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [timeRange, setTimeRange] = useState<{ minDate: Date, maxDate: Date, gridScale: number }>({
     minDate: new Date(1970, 0, 1),
     maxDate: new Date(2025, 0, 1),
     gridScale: 10000
   });
-  
-  // Handle node drag events
-  const onNodesChange = useCallback((changes: any) => {
-    setNodes((nds) => {
-      // Apply node changes (position updates from dragging)
-      const updatedNodes = [...nds];
-      changes.forEach((change: any) => {
-        if (change.type === 'position' && change.position) {
-          const nodeIndex = updatedNodes.findIndex(n => n.id === change.id);
-          if (nodeIndex !== -1) {
-            updatedNodes[nodeIndex] = {
-              ...updatedNodes[nodeIndex],
-              position: change.position
-            };
-          }
-        }
-      });
-      return updatedNodes;
-    });
-  }, []);
   
   // Create nodes/edges whenever filteredEvents changes
   useEffect(() => {
