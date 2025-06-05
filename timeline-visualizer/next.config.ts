@@ -25,10 +25,7 @@ const nextConfig: NextConfig = {
     // No need for manual fs, net, tls fallbacks
   },
   
-  // Turbopack configuration (when needed)
-  turbopack: {
-    // Add any Turbopack-specific configurations here if needed
-  },
+  
 };
 
 export default nextConfig;
