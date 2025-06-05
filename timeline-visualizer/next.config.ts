@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   // Disable strict mode to prevent double-rendering in development
   reactStrictMode: false,
+  
   // Configure headers to prevent MIME type issues
   async headers() {
     return [
@@ -22,6 +23,11 @@ const nextConfig: NextConfig = {
   turbopack: {
     // Turbopack handles Node.js module fallbacks automatically
     // No need for manual fs, net, tls fallbacks
+  },
+  
+  // Turbopack configuration (when needed)
+  turbopack: {
+    // Add any Turbopack-specific configurations here if needed
   },
 };
 

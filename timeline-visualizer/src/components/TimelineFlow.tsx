@@ -380,30 +380,30 @@ const TimelineFlowInner = () => {
   }, [filteredEvents]);
   
   // Init and position nodes in view without changing zoom
-  useEffect(() => {
-    console.log(`Current view has ${nodes.length} nodes`);
+  // useEffect(() => {
+  //   // console.log(`Current view has ${nodes.length} nodes`);
     
-    // Delay positioning to ensure rendering is complete
-    const timer = setTimeout(() => {
-      if (reactFlowInstance && nodes.length > 0) {
-        console.log("Positioning nodes in view while preserving zoom");
+  //   // Delay positioning to ensure rendering is complete
+  //   const timer = setTimeout(() => {
+  //     if (reactFlowInstance && nodes.length > 0) {
+  //       console.log("Positioning nodes in view while preserving zoom");
         
-        // Get the current viewport zoom level
-        const { zoom } = reactFlowInstance.getViewport();
+  //       // Get the current viewport zoom level
+  //       const { zoom } = reactFlowInstance.getViewport();
         
-        // Use fitView but ensure it respects our desired zoom level
-        reactFlowInstance.fitView({
-          padding: 0.5,
-          includeHiddenNodes: false,
-          duration: 800,
-          minZoom: zoom, // Don't zoom out further than current zoom
-          maxZoom: zoom  // Don't zoom in further than current zoom
-        });
-      }
-    }, 500);
+  //       // Use fitView but ensure it respects our desired zoom level
+  //       reactFlowInstance.fitView({
+  //         padding: 0.5,
+  //         includeHiddenNodes: false,
+  //         duration: 800,
+  //         minZoom: zoom, // Don't zoom out further than current zoom
+  //         maxZoom: zoom  // Don't zoom in further than current zoom
+  //       });
+  //     }
+  //   }, 500);
     
-    return () => clearTimeout(timer);
-  }, [nodes, reactFlowInstance]);
+  //   return () => clearTimeout(timer);
+  // }, [nodes, reactFlowInstance]);
   
   return (
     <div style={{ width: '100%', height: '100%' }} className="bg-gray-950">
@@ -414,7 +414,7 @@ const TimelineFlowInner = () => {
         onNodesChange={onNodesChange}
         // Remove fitView prop as it overrides our zoom setting
         // fitView
-        fitViewOptions={{ padding: 0.2 }}
+        // fitViewOptions={{ padding: 0.2 }}
         minZoom={0.1}
         maxZoom={2}
         defaultViewport={{ x: 0, y: 0, zoom: 0.5 }}
@@ -425,7 +425,7 @@ const TimelineFlowInner = () => {
         nodesDraggable={true}
         nodesFocusable={true}
         edgesFocusable={false}
-        panOnDrag={false}
+        panOnDrag={true}
       >
         
         {/* Custom time grid that transforms with viewport */}
