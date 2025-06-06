@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ReactionData } from '@/types/timeline';
-import ExpertReactionModal from './ExpertReactionModal';
+import ExpertDetailPanel from './ExpertDetailPanel';
 
 interface TechExpertBubbleProps {
   reactions: ReactionData[];
@@ -9,7 +9,7 @@ interface TechExpertBubbleProps {
 }
 
 export default function TechExpertBubble({ reactions, eventId }: TechExpertBubbleProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   // Filter to only show tech expert reactions
   const techExpertReaction = reactions.find(reaction => 
@@ -23,7 +23,7 @@ export default function TechExpertBubble({ reactions, eventId }: TechExpertBubbl
 
   const handleBubbleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsModalOpen(true);
+    setIsPanelOpen(true);
   };
 
   return (
@@ -85,11 +85,11 @@ export default function TechExpertBubble({ reactions, eventId }: TechExpertBubbl
         </div>
       </div>
 
-      {/* Expert Reaction Modal - rendered via portal to document body */}
-      {isModalOpen && typeof window !== 'undefined' && createPortal(
-        <ExpertReactionModal
+      {/* Expert Detail Panel - rendered via portal to document body for global viewport positioning */}
+      {isPanelOpen && typeof window !== 'undefined' && createPortal(
+        <ExpertDetailPanel
           reaction={techExpertReaction}
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => setIsPanelOpen(false)}
         />,
         document.body
       )}
