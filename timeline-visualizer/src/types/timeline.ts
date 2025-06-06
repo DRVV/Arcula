@@ -46,6 +46,7 @@ export interface ReactionData {
   emotion: 'positive' | 'negative' | 'neutral' | 'excited' | 'concerned' | 'surprised' | 'curious' | 'cautious' | 'interested';
   emoticon: string; // emoji representing the reaction
   shortReaction: string; // brief text for bubble display
+  shortDescription: string; // concise description for simplified bubble display
   detailedReaction: string; // full reaction shown on click
   timestamp?: Date;
 }

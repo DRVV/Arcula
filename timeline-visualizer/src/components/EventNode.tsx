@@ -4,7 +4,7 @@ import { TimelineEvent } from '@/types/timeline';
 import { format } from 'date-fns';
 
 import { useChat } from '@/contexts/ChatContext';
-import SpeechBubble from './SpeechBubble';
+import TechExpertBubble from './TechExpertBubble';
 
 // Our component receives the standard props from React Flow
 export default function EventNode({ data }: { data: { event: TimelineEvent } }) {
@@ -194,19 +194,12 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
       </div>
       </div>
       
-      {/* Render speech bubble if reaction data exists */}
+      {/* Render tech expert bubble if reaction data exists */}
       {eventReactions && (
-        <div className="speech-bubble-container">
-          <SpeechBubble 
-            reaction={{
-              id: `reaction-${event.id}`,
-              eventId: event.id,
-              stakeholders: eventReactions,
-              position: undefined
-            }} 
-            position="bottom"
-          />
-        </div>
+        <TechExpertBubble 
+          reactions={eventReactions}
+          eventId={event.id}
+        />
       )}
     </div>
   );
