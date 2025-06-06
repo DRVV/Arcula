@@ -5,7 +5,6 @@ import { format } from 'date-fns';
 
 import { useChat } from '@/contexts/ChatContext';
 import SpeechBubble from './SpeechBubble';
-import { reactionData } from '@/data/reactionData';
 
 // Our component receives the standard props from React Flow
 export default function EventNode({ data }: { data: { event: TimelineEvent } }) {
@@ -24,11 +23,11 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
     return lastBotMessageWithEvents?.generatedEvents?.some(event => event.id === data.event.id) || false;
   }, [messages, data?.event?.id]);
   
-  // Find reaction data for this event
-  const eventReaction = useMemo(() => {
-    if (!data?.event?.id) return undefined;
-    return reactionData.find(reaction => reaction.eventId === data.event.id);
-  }, [data?.event?.id]);
+  // Get embedded reaction data from the event
+  const eventReactions = useMemo(() => {
+    if (!data?.event?.reactions || data.event.reactions.length === 0) return undefined;
+    return data.event.reactions;
+  }, [data?.event?.reactions]);
   
   // Make sure event data exists
   if (!data || !data.event) {
@@ -196,10 +195,15 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
       </div>
       
       {/* Render speech bubble if reaction data exists */}
-      {eventReaction && (
+      {eventReactions && (
         <div className="speech-bubble-container">
           <SpeechBubble 
-            reaction={eventReaction} 
+            reaction={{
+              id: `reaction-${event.id}`,
+              eventId: event.id,
+              stakeholders: eventReactions,
+              position: undefined
+            }} 
             position="bottom"
           />
         </div>

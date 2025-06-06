@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Reaction, ReactionData } from '@/types/timeline';
+import { ReactionData } from '@/types/timeline';
 
 interface ReactionNodeProps {
   data: Record<string, unknown>;
 }
 
+interface ReactionNodeData {
+  id: string;
+  eventId: string;
+  stakeholders: ReactionData[];
+  position?: { x: number; y: number };
+}
+
 export default function ReactionNode({ data }: ReactionNodeProps) {
-  // Convert the generic data back to Reaction type
-  const reaction = data as unknown as Reaction;
+  // Convert the generic data back to ReactionNodeData type
+  const reaction = data as unknown as ReactionNodeData;
   const [showFullDescriptions, setShowFullDescriptions] = useState(false);
 
   if (!reaction || !reaction.stakeholders) {

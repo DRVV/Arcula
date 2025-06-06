@@ -15,6 +15,7 @@ export interface TimelineEvent {
     url: string;
   }[];
   position?: { x: number, y: number }; // For custom positioning
+  reactions?: ReactionData[]; // Embedded stakeholder reactions
 }
 
 export interface TimelineNode {
@@ -42,24 +43,9 @@ export interface Stakeholder {
 
 export interface ReactionData {
   stakeholder: Stakeholder;
-  emotion: 'positive' | 'negative' | 'neutral' | 'excited' | 'concerned' | 'surprised';
+  emotion: 'positive' | 'negative' | 'neutral' | 'excited' | 'concerned' | 'surprised' | 'curious' | 'cautious' | 'interested';
   emoticon: string; // emoji representing the reaction
   shortReaction: string; // brief text for bubble display
   detailedReaction: string; // full reaction shown on click
   timestamp?: Date;
-}
-
-export interface Reaction {
-  id: string;
-  eventId: string; // links to TimelineEvent
-  stakeholders: ReactionData[];
-  position?: { x: number; y: number };
-}
-
-export interface ReactionNode {
-  id: string;
-  type: 'reactionBubble';
-  position: { x: number; y: number };
-  data: Reaction;
-  style?: React.CSSProperties;
 }

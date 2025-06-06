@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
-import { Reaction, ReactionData } from '@/types/timeline';
+import { ReactionData } from '@/types/timeline';
 
 interface SpeechBubbleProps {
-  reaction: Reaction;
+  reaction: {
+    id: string;
+    eventId: string;
+    stakeholders: ReactionData[];
+    position?: { x: number; y: number };
+  };
   position?: 'bottom' | 'right' | 'left';
 }
 
