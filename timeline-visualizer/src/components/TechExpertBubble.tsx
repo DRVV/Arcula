@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ReactionData } from '@/types/timeline';
 import ExpertReactionModal from './ExpertReactionModal';
 
@@ -84,12 +85,13 @@ export default function TechExpertBubble({ reactions, eventId }: TechExpertBubbl
         </div>
       </div>
 
-      {/* Expert Reaction Modal */}
-      {isModalOpen && (
+      {/* Expert Reaction Modal - rendered via portal to document body */}
+      {isModalOpen && typeof window !== 'undefined' && createPortal(
         <ExpertReactionModal
           reaction={techExpertReaction}
           onClose={() => setIsModalOpen(false)}
-        />
+        />,
+        document.body
       )}
     </>
   );
