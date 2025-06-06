@@ -1,28 +1,108 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
-import { useChat } from '@/contexts/ChatContext';
+import { useState } from 'react';
+import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
+import { 
+  MainContainer, 
+  ChatContainer, 
+  MessageList, 
+  Message, 
+  MessageInput,
+  TypingIndicator
+} from '@chatscope/chat-ui-kit-react';
+import { useTimeline } from '@/contexts/TimelineContext';
+import { TimelineEvent } from '@/types/timeline';
+
+interface ChatMessage {
+  message: string;
+  sentTime: string;
+  sender: string;
+  direction: 'incoming' | 'outgoing';
+  position: 'single' | 'first' | 'normal' | 'last';
+  timestamp: Date;
+}
 
 const ChatWindow = () => {
-  const { messages, isOpen, isProcessing, setIsOpen, sendMessage } = useChat();
-  const [inputText, setInputText] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  // Auto-scroll to bottom when new messages are added
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      message: "Hello! I'm here to help you explore the timeline. Feel free to chat with me!",
+      sentTime: "just now",
+      sender: "Assistant",
+      direction: "incoming",
+      position: "single",
+      timestamp: new Date()
+    }
+  ]);
+  const [isTyping, setIsTyping] = useState(false);
+  const { addEvents } = useTimeline();
 
-  const handleSendMessage = () => {
-    if (inputText.trim() === '') return;
-    sendMessage(inputText);
-    setInputText('');
+  const handleSend = (message: string) => {
+    const newMessage: ChatMessage = {
+      message,
+      sentTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      sender: "You",
+      direction: "outgoing",
+      position: "single",
+      timestamp: new Date()
+    };
+
+    setMessages(prevMessages => [...prevMessages, newMessage]);
+
+    // Simulate assistant response
+    setIsTyping(true);
+    setTimeout(() => {
+      const responses = [
+        "That's an interesting point about the timeline!",
+        "I can see you're exploring historical events. What period interests you most?",
+        "Thanks for sharing! The timeline visualization helps us understand these connections.",
+        "Great observation! Have you noticed any patterns in the events?",
+        "I understand. The timeline really puts things in perspective!",
+      ];
+      
+      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+      
+      const assistantMessage: ChatMessage = {
+        message: randomResponse,
+        sentTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        sender: "Assistant",
+        direction: "incoming",
+        position: "single",
+        timestamp: new Date()
+      };
+
+      setMessages(prevMessages => [...prevMessages, assistantMessage]);
+      setIsTyping(false);
+    }, 1000 + Math.random() * 2000);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+  const handleUpdateGraph = () => {
+    // Convert chat messages to timeline events
+    const chatEvents: TimelineEvent[] = messages.map((msg, index) => {
+      // Create a title from the first few words of the message
+      const words = msg.message.split(' ');
+      const title = words.slice(0, 5).join(' ') + (words.length > 5 ? '...' : '');
+      
+      return {
+        id: `chat-${msg.timestamp.getTime()}-${index}`,
+        date: msg.timestamp,
+        title: `${msg.sender}: ${title}`,
+        description: `[${msg.sentTime}] ${msg.sender}: ${msg.message}`,
+        category: ['chat-history'],
+        importance: 3 as 1 | 2 | 3 | 4 | 5
+      };
+    });
+
+    console.log('📊 Adding chat history to timeline:', chatEvents.length, 'messages');
+    addEvents(chatEvents);
+    
+    // Show a success indicator (could be a toast in the future)
+    const button = document.getElementById('update-graph-btn');
+    if (button) {
+      button.textContent = '✅ Updated!';
+      setTimeout(() => {
+        button.textContent = '📊 Update Graph';
+      }, 2000);
     }
   };
 
@@ -47,96 +127,72 @@ const ChatWindow = () => {
 
       {/* Chat window */}
       <div 
-        className={`fixed bottom-24 right-6 w-80 sm:w-96 bg-gray-900 border border-gray-800 rounded-lg shadow-xl flex flex-col z-50 transition-all duration-300 ease-in-out overflow-hidden ${
-          isOpen ? 'h-96 opacity-100' : 'h-0 opacity-0 pointer-events-none'
+        className={`fixed bottom-24 right-6 w-96 sm:w-[28rem] lg:w-[32rem] bg-gray-900 border border-gray-800 rounded-lg shadow-xl flex flex-col z-50 transition-all duration-300 ease-in-out overflow-hidden ${
+          isOpen ? 'h-[28rem] lg:h-[32rem] opacity-100' : 'h-0 opacity-0 pointer-events-none'
         }`}
       >
         {/* Chat header */}
-        <div className="bg-gradient-to-r from-indigo-800 to-indigo-900 px-4 py-3 flex items-center justify-between border-b border-indigo-700 shadow-md">
+        <div className="bg-gradient-to-r from-indigo-800 to-indigo-900 px-4 py-2 flex items-center justify-between border-b border-indigo-700 shadow-md">
           <h3 className="text-white font-medium flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
-            Historical Events Generator
+            Timeline Chat
           </h3>
-          <span className="w-3 h-3 bg-green-500 rounded-full shadow-inner"></span>
-        </div>
-        
-        {/* Messages container */}
-        <div className="flex-1 p-3 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`mb-3 max-w-[85%] ${
-                message.sender === 'user' ? 'ml-auto' : 'mr-auto'
-              }`}
-            >
-              <div
-                className={`p-3 rounded-lg ${
-                  message.sender === 'user'
-                    ? 'bg-indigo-700 text-white rounded-br-none'
-                    : 'bg-gray-800 text-gray-200 rounded-bl-none'
-                }`}
-              >
-                {message.isLoading ? (
-                  <div className="flex items-center space-x-2">
-                    <span>{message.text}</span>
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></div>
-                      <div className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse delay-100"></div>
-                      <div className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse delay-200"></div>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {message.text}
-                    {message.generatedEvents && message.generatedEvents.length > 0 && (
-                      <div className="mt-2 text-xs text-indigo-300 italic">
-                        Added {message.generatedEvents.length} historical events to the timeline
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-              <div
-                className={`text-xs mt-1 text-gray-500 ${
-                  message.sender === 'user' ? 'text-right' : 'text-left'
-                }`}
-              >
-                {message.timestamp.toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </div>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-        
-        {/* Input area */}
-        <div className="border-t border-gray-700 p-3 bg-gray-800">
-          <div className="flex items-center">
-            <textarea
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder={isProcessing ? "Generating events..." : "Ask about any historical period or events..."}
-              className="flex-1 bg-gray-700 text-white placeholder-gray-400 rounded-l-md py-2 px-3 focus:outline-none resize-none max-h-24"
-              rows={1}
-              disabled={isProcessing}
-            />
-            <button
-              onClick={handleSendMessage}
-              disabled={inputText.trim() === '' || isProcessing}
-              className={`bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-r-md ${
-                inputText.trim() === '' || isProcessing ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-              </svg>
-            </button>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-green-500 rounded-full shadow-inner"></span>
           </div>
+        </div>
+        
+        {/* Chat container */}
+        <div className="flex-1 overflow-hidden" style={{ background: '#1f2937' }}>
+          {isOpen && (
+            <MainContainer style={{ border: 'none', borderRadius: '0' }}>
+              <ChatContainer style={{ background: 'transparent' }}>
+                <MessageList
+                  scrollBehavior="smooth"
+                  typingIndicator={isTyping ? <TypingIndicator content="Assistant is typing..." style={{ background: '#374151', color: '#e5e7eb' }} /> : null}
+                  style={{ background: 'transparent' }}
+                >
+                  {messages.map((message, index) => (
+                    <Message
+                      key={index}
+                      model={{
+                        message: message.message,
+                        sentTime: message.sentTime,
+                        sender: message.sender,
+                        direction: message.direction,
+                        position: message.position
+                      }}
+                    />
+                  ))}
+                </MessageList>
+                <MessageInput 
+                  placeholder="Type your message here..." 
+                  onSend={handleSend}
+                  disabled={isTyping}
+                  attachButton={false}  // This removes the clip/attachment icon
+                  style={{ 
+                    background: '#111827', 
+                    borderTop: '1px solid #374151',
+                    color: '#e5e7eb'
+                  }}
+                />
+              </ChatContainer>
+            </MainContainer>
+          )}
+        </div>
+        
+        {/* Update Graph button */}
+        <div className="bg-gray-800 border-t border-gray-700 p-3">
+          <button
+            id="update-graph-btn"
+            onClick={handleUpdateGraph}
+            className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors flex items-center justify-center gap-2 font-medium"
+            disabled={messages.length <= 1} // Disable if only initial message exists
+          >
+            <span>📊 Update Graph</span>
+          </button>
         </div>
       </div>
     </>
