@@ -84,14 +84,14 @@ export default function ExpertDetailPanel({ reaction, onClose }: ExpertDetailPan
           {/* Content section */}
           <div className="space-y-4">
             {/* Short description */}
-            <div>
+            {/* <div>
               <h3 className="text-sm font-semibold text-blue-400 mb-2">
                 Quick Take
               </h3>
               <p className="text-gray-300 text-sm leading-relaxed">
                 {reaction.shortDescription}
               </p>
-            </div>
+            </div> */}
 
             {/* Detailed reaction */}
             <div>

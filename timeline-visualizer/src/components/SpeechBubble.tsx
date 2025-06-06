@@ -105,14 +105,14 @@ export default function SpeechBubble({ reaction, position = 'bottom' }: SpeechBu
     <div className={`absolute ${positionClasses[position]} z-50 speech-bubble-appear`} style={{ pointerEvents: 'auto' }}>
       {/* Speech bubble */}
       <div 
-        className={`relative bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-2xl border-2 shadow-2xl cursor-pointer transition-all duration-300 ${
+        className={`relative bg-gray-800 bg-opacity-75 backdrop-blur-sm rounded-2xl border-2 shadow-2xl cursor-pointer transition-all duration-300 ${
           expanded ? 'scale-110' : 'hover:scale-105'
         }`}
         style={{ 
           borderColor: bubbleColor,
           boxShadow: `0 4px 20px ${bubbleColor}40, 0 0 40px ${bubbleColor}20`,
-          minWidth: '140px',
-          maxWidth: expanded ? '320px' : '200px',
+          minWidth: '120px',
+          maxWidth: expanded ? '280px' : '180px',
           animation: 'float 3s ease-in-out infinite'
         }}
         onClick={handleBubbleClick}
@@ -120,7 +120,7 @@ export default function SpeechBubble({ reaction, position = 'bottom' }: SpeechBu
         {/* Speech bubble tail */}
         {getTailSVG()}
         
-        <div className="p-4">
+        <div className="p-3">
           {/* Stakeholder section */}
           <div className="mb-3">
             <div className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">Stakeholder Reactions</div>
@@ -128,7 +128,7 @@ export default function SpeechBubble({ reaction, position = 'bottom' }: SpeechBu
               {reaction.stakeholders.slice(0, expanded ? reaction.stakeholders.length : 6).map((stakeholderReaction) => (
                 <div
                   key={stakeholderReaction.stakeholder.id}
-                  className={`flex flex-col items-center p-2 rounded-xl transition-all duration-200 backdrop-blur-sm ${
+                  className={`flex flex-col items-center p-1.5 rounded-xl transition-all duration-200 backdrop-blur-sm ${
                     selectedStakeholder?.stakeholder.id === stakeholderReaction.stakeholder.id 
                       ? 'bg-blue-600 bg-opacity-30 shadow-lg scale-105' 
                       : 'hover:bg-gray-700 hover:bg-opacity-30 hover:shadow-md'
@@ -157,11 +157,11 @@ export default function SpeechBubble({ reaction, position = 'bottom' }: SpeechBu
           {expanded && (
             <div className="pt-3 border-t border-gray-700">
               <div className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-semibold">Emotional Summary</div>
-              <div className="space-y-2">
+                <div className="space-y-1.5">
                 {reaction.stakeholders.slice(0, 3).map((stakeholderReaction) => (
                   <div
                     key={`emotion-${stakeholderReaction.stakeholder.id}`}
-                    className="flex items-center gap-2 text-xs bg-gray-900 bg-opacity-50 rounded-lg p-2"
+                    className="flex items-center gap-2 text-xs bg-gray-900 bg-opacity-50 rounded-lg p-1.5"
                   >
                     <span className="text-lg">{stakeholderReaction.emoticon}</span>
                     <span className="text-gray-300 flex-1">
@@ -190,13 +190,13 @@ export default function SpeechBubble({ reaction, position = 'bottom' }: SpeechBu
       {/* Detailed reaction modal */}
       {selectedStakeholder && (
         <div 
-          className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 z-50 bg-gray-900 bg-opacity-95 backdrop-blur-md border-2 border-gray-600 rounded-xl shadow-2xl max-w-sm w-80"
+          className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 z-50 bg-gray-900 bg-opacity-80 backdrop-blur-md border-2 border-gray-600 rounded-xl shadow-2xl max-w-sm w-72"
           onClick={(e) => e.stopPropagation()}
           style={{
             boxShadow: '0 10px 40px rgba(0,0,0,0.5)'
           }}
         >
-          <div className="p-5">
+          <div className="p-4">
             <div className="flex items-center mb-4">
               <span className="text-3xl mr-3">{selectedStakeholder.stakeholder.icon}</span>
               <div className="flex-1">

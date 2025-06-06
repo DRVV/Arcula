@@ -64,7 +64,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'excited',
         emoticon: '📱',
         shortReaction: 'タッチ操作の未来が来た！',
-        shortDescription: 'Touch-based smartphone revolution begins...',
+        shortDescription: 'タッチベーススマホ革命の始まり...',
         detailedReaction: '電話・音楽プレイヤー・インターネットが一体となった革新的デバイスにワクワクが止まらない。キーボード無しで画面を指で触るだけの操作は、まるでSFの世界だ。',
         timestamp: new Date('2007-01-09')
       },
@@ -73,7 +73,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'excited',
         emoticon: '🧑‍💻',
         shortReaction: 'マルチタッチ実装に衝撃',
-        shortDescription: 'Capacitive multi-touch changes everything...',
+        shortDescription: '静電容量式マルチタッチが全てを変える...',
         detailedReaction: '静電容量式マルチタッチとiOSの滑らかなUIはモバイル設計の常識を覆す。ARM11プロセッサ + PowerVR GPU、カスタムOSX、WebKit搭載ブラウザ。SDK公開が待ち遠しく、開発者コミュニティは熱狂している。',
         timestamp: new Date('2007-01-10')
       },
@@ -82,7 +82,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'positive',
         emoticon: '💹',
         shortReaction: '株価上昇の予感',
-        shortDescription: 'Mobile market expansion opportunity...',
+        shortDescription: 'モバイル市場拡大の機会...',
         detailedReaction: 'アップルの携帯市場参入で収益源が拡大する可能性が高い。供給網とキャリア提携の行方に注目が集まる。',
         timestamp: new Date('2007-01-11')
       },
@@ -91,7 +91,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'concerned',
         emoticon: '📜',
         shortReaction: '販売モデルの規制検討',
-        shortDescription: 'Vertical integration model raises concerns...',
+        shortDescription: '垂直統合モデルが懸念を喚起...',
         detailedReaction: '端末とサービスを垂直統合で提供するモデルが競争政策に与える影響を評価する必要がある。',
         timestamp: new Date('2007-01-12')
       }
@@ -121,7 +121,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'excited',
         emoticon: '🛍️',
         shortReaction: 'アプリ買い放題！',
-        shortDescription: 'One-stop app marketplace revolution begins...',
+        shortDescription: 'ワンストップアプリマーケット革命開始...',
         detailedReaction: '携帯でゲームも家計簿もダウンロードするだけで手に入るなんて便利すぎる。友達とアプリを共有するのが新しい日課になりそうだ。',
         timestamp: new Date('2008-07-10')
       },
@@ -130,7 +130,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'excited',
         emoticon: '💡',
         shortReaction: 'デジタル流通革命',
-        shortDescription: 'Digital distribution platform transforms development...',
+        shortDescription: 'デジタル配信プラットフォームが開発を変革...',
         detailedReaction: 'Code signing、Sandboxing、iTunes決済システム統合。審査付きマーケットと一括配信の仕組みで、個人開発者でも世界中にアプリを提供できる。DRMとOTA更新の組み合わせが新たなビジネスモデルを可能にする。',
         timestamp: new Date('2008-07-11')
       },
@@ -139,7 +139,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'positive',
         emoticon: '📈',
         shortReaction: '収益モデルが激変',
-        shortDescription: '30% platform revenue model emerges...',
+        shortDescription: '30%プラットフォーム収益モデルが登場...',
         detailedReaction: 'アプリ内課金30%モデルは継続的な手数料収入を確保する強力なエコシステム戦略。プラットフォーム支配力が一段と強まる。',
         timestamp: new Date('2008-07-12')
       },
@@ -148,7 +148,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'concerned',
         emoticon: '🔎',
         shortReaction: '課税・審査体制を検討',
-        shortDescription: 'Digital taxation and oversight challenges arise...',
+        shortDescription: 'デジタル課税と監視の課題が浮上...',
         detailedReaction: '国境を越えたデジタル流通が急増するため、VATや著作権監視体制をアップデートする必要がある。',
         timestamp: new Date('2008-07-13')
       }
@@ -178,7 +178,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'positive',
         emoticon: '🤖',
         shortReaction: '選択肢が増えた！',
-        shortDescription: 'More smartphone options finally available...',
+        shortDescription: 'ついにスマホの選択肢が拡大...',
         detailedReaction: 'iPhone以外にもタッチ式スマホが登場し、料金プランや端末デザインを自由に選べる時代が来た。',
         timestamp: new Date('2008-09-23')
       },
@@ -187,7 +187,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'excited',
         emoticon: '🔧',
         shortReaction: 'オープンソース万歳',
-        shortDescription: 'Open-source mobile platform revolutionizes development...',
+        shortDescription: 'オープンソースモバイルが開発を革命化...',
         detailedReaction: 'Linux kernel + Java ベースDalvik VM、Apache/GPLライセンス。Androidのオープン性はカスタムROM開発、ハードウェア多様化、フラグメンテーション課題を同時にもたらす。WebKit、SQLite、OpenGL ES統合でWeb標準準拠を実現。',
         timestamp: new Date('2008-09-24')
       },
@@ -196,7 +196,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'cautious',
         emoticon: '💼',
         shortReaction: '市場競争激化',
-        shortDescription: 'Increased competition affects margins...',
+        shortDescription: '競争激化がマージンに影響...',
         detailedReaction: '複数ベンダーがAndroidを採用すれば市場は急拡大するが、価格競争で利益率が低下するリスクもある。',
         timestamp: new Date('2008-09-25')
       },
@@ -205,7 +205,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'neutral',
         emoticon: '⚖️',
         shortReaction: '標準化と互換性に注目',
-        shortDescription: 'Standardization and compatibility considerations...',
+        shortDescription: '標準化と互換性の検討課題...',
         detailedReaction: '多様なデバイスが急増することで、電波利用や端末認証のルールを整理する必要がある。',
         timestamp: new Date('2008-09-26')
       }
@@ -235,7 +235,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'curious',
         emoticon: '📖',
         shortReaction: '大画面で動画ざんまい',
-        shortDescription: 'Large screen mobile entertainment experience...',
+        shortDescription: '大画面モバイルエンターテインメント体験...',
         detailedReaction: '寝転びながら映画やネットを楽しめる薄型端末に惹かれる。新聞や雑誌を電子版で読めるのは画期的だ。',
         timestamp: new Date('2010-04-03')
       },
@@ -244,7 +244,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'positive',
         emoticon: '🖥️',
         shortReaction: 'SoCとUI拡張の技術革新',
-        shortDescription: 'Custom SoC and UI scaling breakthrough...',
+        shortDescription: 'カスタムSoCとUI拡張の技術革新...',
         detailedReaction: 'A4 SoC（Apple初の独自チップ）、IPS液晶、大容量バッテリー管理技術。iOS UI Kitのスケーリング、Split View概念の原型。大画面専用UIの設計パターンとレスポンシブデザインが新たな課題。',
         timestamp: new Date('2010-04-04')
       },
@@ -253,7 +253,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'positive',
         emoticon: '💰',
         shortReaction: '新カテゴリー誕生',
-        shortDescription: 'New tablet market category emerges...',
+        shortDescription: '新たなタブレット市場カテゴリーが誕生...',
         detailedReaction: 'ノートPCとスマホの間に新市場が生まれ、アクセサリやコンテンツ販売も期待できる。',
         timestamp: new Date('2010-04-05')
       },
@@ -262,7 +262,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'interested',
         emoticon: '🏛️',
         shortReaction: '教育利用を検討',
-        shortDescription: 'Educational and digital governance potential...',
+        shortDescription: '教育とデジタルガバナンスの可能性...',
         detailedReaction: '電子教科書や行政手続きのデジタル化に活用できる可能性を調査する方針。',
         timestamp: new Date('2010-04-06')
       }
@@ -292,7 +292,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'excited',
         emoticon: '⚡',
         shortReaction: '動画がサクサク！',
-        shortDescription: 'High-speed mobile internet finally arrives...',
+        shortDescription: 'ついに高速モバイルインターネットが到来...',
         detailedReaction: '地下鉄でも高画質動画が止まらずに見られ、ストリーミング音楽も快適。ネットがさらに身近になった。',
         timestamp: new Date('2012-09-21')
       },
@@ -301,7 +301,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'positive',
         emoticon: '🌐',
         shortReaction: 'OFDMA技術の実用化',
-        shortDescription: 'OFDMA technology revolutionizes mobile bandwidth...',
+        shortDescription: 'OFDMA技術がモバイル帯域を革命化...',
         detailedReaction: 'OFDMA + MIMO、All-IP Architecture、EPC（Evolved Packet Core）によるパケット最適化。帯域効率が3Gの10倍向上し、クラウドストレージやWebアプリのレスポンスが劇的改善。キャリアアグリゲーションで更なる高速化の道筋も見える。',
         timestamp: new Date('2012-09-22')
       },
@@ -310,7 +310,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'positive',
         emoticon: '🏗️',
         shortReaction: 'インフラ投資拡大',
-        shortDescription: 'Infrastructure investment surge anticipated...',
+        shortDescription: 'インフラ投資急増が予想される...',
         detailedReaction: '基地局更新と周波数オークションでCAPEXは増えるが、ARPU改善で回収可能との見方。',
         timestamp: new Date('2012-09-23')
       },
@@ -319,7 +319,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'concerned',
         emoticon: '📡',
         shortReaction: '周波数再編と公平性',
-        shortDescription: 'Spectrum allocation and fairness concerns...',
+        shortDescription: '周波数割当と公平性の懸念...',
         detailedReaction: 'LTE用帯域割当とMVNO接続ルールを策定し、通信品質を確保する必要がある。',
         timestamp: new Date('2012-09-24')
       }
@@ -349,7 +349,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'curious',
         emoticon: '⌚',
         shortReaction: '健康管理が楽しい',
-        shortDescription: 'Wearable health tracking revolution begins...',
+        shortDescription: 'ウェアラブル健康追跡革命が開始...',
         detailedReaction: '歩数や心拍数が自動で記録され、通知も手元で確認できる。ファッションアイテムとしても話題に。',
         timestamp: new Date('2014-09-09')
       },
@@ -358,7 +358,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'excited',
         emoticon: '🏃',
         shortReaction: 'ウェアラブル技術の集大成',
-        shortDescription: 'Wearable technology reaches new sophistication...',
+        shortDescription: 'ウェアラブル技術が新たな洗練度に到達...',
         detailedReaction: 'S1 SiP（System in Package）、Taptic Engine、Digital Crown、心拍センサー統合。低電力Bluetooth LE、HealthKit連携、Force Touch技術。ウェアラブルSDKとCore Animation最適化で、小画面向けUXパラダイムを確立。',
         timestamp: new Date('2014-09-10')
       },
@@ -367,7 +367,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'positive',
         emoticon: '💸',
         shortReaction: '周辺市場拡大',
-        shortDescription: 'Accessory and service market expansion...',
+        shortDescription: 'アクセサリとサービス市場の拡大...',
         detailedReaction: 'バンド、アプリ、ヘルスサービスなど周辺ビジネスが広がり、平均販売単価を押し上げる見通し。',
         timestamp: new Date('2014-09-11')
       },
@@ -376,7 +376,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'concerned',
         emoticon: '🔒',
         shortReaction: '個人データ保護を強化',
-        shortDescription: 'Biometric data privacy concerns emerge...',
+        shortDescription: 'バイオメトリクスデータプライバシー懸念が浮上...',
         detailedReaction: 'バイタル情報の収集・送信には厳格なプライバシー指針が欠かせない。',
         timestamp: new Date('2014-09-12')
       }
@@ -406,7 +406,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'curious',
         emoticon: '📱',
         shortReaction: '画面が折れるなんて！',
-        shortDescription: 'Foldable screen technology amazes consumers...',
+        shortDescription: '折りたたみスクリーン技術が消費者を驚嘆...',
         detailedReaction: 'タブレットサイズの画面をポケットに収められるのは魅力的だが、耐久性と価格が気になる。',
         timestamp: new Date('2019-04-26')
       },
@@ -415,7 +415,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'excited',
         emoticon: '🪄',
         shortReaction: 'フレキシブル素材工学の勝利',
-        shortDescription: 'Flexible material engineering breakthrough achieved...',
+        shortDescription: 'フレキシブル素材工学の突破口を達成...',
         detailedReaction: '超薄型ガラス（UTG）、ポリイミド基板、複雑なヒンジ機構、App Continuity技術。フレキシブルOLED製造プロセス、折り曲げ耐久性テスト、マルチスクリーンUI設計。材料科学とソフトウェア工学の高度な融合が量産レベルで実現。',
         timestamp: new Date('2019-04-27')
       },
@@ -424,7 +424,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'cautious',
         emoticon: '💸',
         shortReaction: '高リスク高リターン',
-        shortDescription: 'High-risk innovation with uncertain returns...',
+        shortDescription: '不確実なリターンを伴うハイリスクイノベーション...',
         detailedReaction: '歩留まりと返品率が収益を左右するが、先行者利益でブランドイメージを高められる可能性も。',
         timestamp: new Date('2019-04-28')
       },
@@ -433,7 +433,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'concerned',
         emoticon: '🛡️',
         shortReaction: 'リサイクル課題を注視',
-        shortDescription: 'Complex material recycling challenges emerge...',
+        shortDescription: '複雑な素材リサイクル課題が出現...',
         detailedReaction: '複合材料の再資源化プロセスを整備し、環境負荷を抑える必要がある。',
         timestamp: new Date('2019-04-29')
       }
@@ -463,7 +463,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'excited',
         emoticon: '🚀',
         shortReaction: '通信がさらに速い！',
-        shortDescription: 'Next-generation mobile speed arrives...',
+        shortDescription: '次世代モバイル速度がついに到来...',
         detailedReaction: '大容量動画のダウンロードが一瞬で終わり、ARゲームも遅延なく楽しめる。',
         timestamp: new Date('2020-10-13')
       },
@@ -472,7 +472,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'excited',
         emoticon: '⚙️',
         shortReaction: 'mmWave + Sub-6技術統合',
-        shortDescription: 'mmWave and Sub-6 technology integration breakthrough...',
+        shortDescription: 'mmWaveとSub-6技術統合の突破口...',
         detailedReaction: 'mmWave（24-100GHz）、Sub-6GHz、Massive MIMO、ビームフォーミング、Network Slicing。5G NR（New Radio）規格、Ultra-Reliable Low Latency通信、エッジコンピューティング統合。リアルタイムAI処理、AR/VR、自動運転の基盤技術が整備完了。',
         timestamp: new Date('2020-10-14')
       },
@@ -481,7 +481,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'positive',
         emoticon: '💷',
         shortReaction: '新ビジネスの地ならし',
-        shortDescription: 'New business opportunities emerge...',
+        shortDescription: '新たなビジネス機会が出現...',
         detailedReaction: '5G対応端末とサービス更新需要でサプライチェーン全体が活性化。ARPU上昇も期待できる。',
         timestamp: new Date('2020-10-15')
       },
@@ -490,7 +490,7 @@ export const timelineEvents: TimelineEvent[] = [
         emotion: 'concerned',
         emoticon: '🔒',
         shortReaction: '基地局整備と安全保障',
-        shortDescription: 'Infrastructure security considerations emerge...',
+        shortDescription: 'インフラセキュリティ考慮事項が浮上...',
         detailedReaction: '国産機器の活用やサプライチェーンリスクを踏まえた5Gインフラ整備戦略を策定する必要がある。',
         timestamp: new Date('2020-10-16')
       }

@@ -327,7 +327,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "excited",
           emoticon: "🪄",
           shortReaction: "鞄いらず！",
-          shortDescription: "Pocket-to-tablet magic…",
+          shortDescription: "ポケットからタブレットへの魔法...",
           detailedReaction: "通勤中は小型、オフィスではタブレット。1台で済むから荷物が減って嬉しい！",
           timestamp: new Date("2027-03-15")
         },
@@ -336,7 +336,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "positive",
           emoticon: "🔩",
           shortReaction: "部品レベルのブレイクスルー",
-          shortDescription: "Graphene-polyimide capacitors enable surge-free folding…",
+          shortDescription: "グラフェン-ポリイミドキャパシタがサージフリー折り畳みを実現...",
           detailedReaction: "300 μm厚のエラストマー基板上に5 μH相当のメタサーフェスらせんインダクタをスパッタ。2000 F/cm³グラフェン-ポリイミドスーパーキャパシタが急速放電を受け持ち、固体酸化物マイクロバッテリ (650 Wh/L) がエネルギーバッファを担当。曲げ半径2 mmで10 万回の折り曲げに耐えるデュアルスプリットMLCCがようやく量産に乗ったのが決定打。",
           timestamp: new Date("2027-03-16")
         },
@@ -345,7 +345,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "positive",
           emoticon: "💵",
           shortReaction: "買い替え需要爆発",
-          shortDescription: "Whole category refresh cycle…",
+          shortDescription: "カテゴリ全体のリフレッシュサイクル...",
           detailedReaction: "可変フォームファクタに合わせたアクセサリ・ケース市場も新規創出。部材サプライヤへの発注量が3倍に。",
           timestamp: new Date("2027-03-17")
         },
@@ -354,7 +354,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "neutral",
           emoticon: "♻️",
           shortReaction: "リサイクル規制を更新",
-          shortDescription: "Elastomer–metal laminate disposal rules…",
+          shortDescription: "エラストマー-金属積層材廃棄ルール...",
           detailedReaction: "ストレッチ基板の分離回収が困難なため、E-waste 法を改訂し専用回収スキームを義務化へ。",
           timestamp: new Date("2027-03-18")
         }
@@ -383,7 +383,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "curious",
           emoticon: "🤔",
           shortReaction: "光で動く？",
-          shortDescription: "Battery lasts a week…",
+          shortDescription: "バッテリーが1週間持続...",
           detailedReaction: "丸5日充電いらずで助かるけど、内部で何が起きてるのか想像できない！",
           timestamp: new Date("2031-06-02")
         },
@@ -392,7 +392,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "excited",
           emoticon: "🔬",
           shortReaction: "受動素子が性能を左右",
-          shortDescription: "Ga₂O₃ power inductors & SiC nano-capacitors…",
+          shortDescription: "Ga₂O₃電源インダクタとSiCナノキャパシタ...",
           detailedReaction: "フォトニックI/Oは電気光変換器のチャージポンプが律速。酸化ガリウム(Ga₂O₃)コア3 nHインダクタ＋SiCナノポアキャパシタの1 GHzスイッチング電源でフォトニックリング共振器にノイズ1 mVpp以下を供給。ミラー整列誤差0.1°以下のIntegrated Micro Lensesが歩留まり80%を突破し量産化が現実に。",
           timestamp: new Date("2031-06-03")
         },
@@ -401,7 +401,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "positive",
           emoticon: "📈",
           shortReaction: "チップサプライ競争激化",
-          shortDescription: "Foundries race for SiN lines…",
+          shortDescription: "ファウンドリがSiN製造ライン競争...",
           detailedReaction: "フォトニック層の追加露光で平均ウェハ粗利が2倍。製造装置メーカーへの発注が殺到。",
           timestamp: new Date("2031-06-04")
         },
@@ -410,7 +410,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "cautious",
           emoticon: "📡",
           shortReaction: "干渉ノイズ規制",
-          shortDescription: "Optical EMI standards drafted…",
+          shortDescription: "光学EMI基準が策定開始...",
           detailedReaction: "可視外光リークが医療機器へ与える影響を評価。新たに“Class O”エミッション基準を設置へ。",
           timestamp: new Date("2031-06-05")
         }
@@ -439,7 +439,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "excited",
           emoticon: "🧠",
           shortReaction: "手ぶらでSNS！",
-          shortDescription: "Post by thought…",
+          shortDescription: "思考で投稿...",
           detailedReaction: "街中でスマホを取り出さずに支払い完了する未来がついに現実。けど集中してない時に誤送信しないか心配。",
           timestamp: new Date("2035-09-27")
         },
@@ -448,7 +448,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "positive",
           emoticon: "🪙",
           shortReaction: "フレキシブル受動部品が鍵",
-          shortDescription: "Graphene spiral inductors & Na-glass micro-caps…",
+          shortDescription: "グラフェン渦巻インダクタとNa-ガラスマイクロキャパシタ...",
           detailedReaction: "縫える厚さ20 μmのグラフェン渦巻インダクタ(0.5 μH)が脳波アンプの共振フィルタを実現。ナトリウム-ガラス固体電解質キャパシタ(150 F/cc)がヘッドバンド全周に分散配置され、動きによる電源電圧フリッカを±5 mV内に収める。皮膚伸縮10%でもインピーダンス変化が1%未満に抑えられたのが最大の進歩。",
           timestamp: new Date("2035-09-28")
         },
@@ -457,7 +457,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "positive",
           emoticon: "🛍️",
           shortReaction: "周辺機器市場に追い風",
-          shortDescription: "BCI app ecosystem boom…",
+          shortDescription: "BCIアプリエコシステムブーム...",
           detailedReaction: "EEGアプリアドオン課金モデルが立ち上がり、脳波データ解析スタートアップへの投資が加熱。",
           timestamp: new Date("2035-09-29")
         },
@@ -466,7 +466,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "concerned",
           emoticon: "👁️",
           shortReaction: "思考プライバシー保護",
-          shortDescription: "Neuro-data consent acts…",
+          shortDescription: "神経データ同意法制化...",
           detailedReaction: "“思考データは生体情報”としてGDPR並みの同意要件を新設。未成年使用に保護者PIN義務付け。",
           timestamp: new Date("2035-09-30")
         }
@@ -495,7 +495,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "excited",
           emoticon: "🌐",
           shortReaction: "映画の未来が現実！",
-          shortDescription: "Star-wars holograms at home…",
+          shortDescription: "スターウォーズのホログラムが家庭に...",
           detailedReaction: "腕を上げると友人のミニチュアホログラムが出現。持ち歩けるシアターで感動！",
           timestamp: new Date("2039-11-11")
         },
@@ -504,7 +504,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "excited",
           emoticon: "⚙️",
           shortReaction: "受動素子が臨界寸法へ",
-          shortDescription: "Diamond-thin capacitors & HTS micro-inductors…",
+          shortDescription: "ダイヤモンド薄膜キャパシタとHTS微小インダクタ...",
           detailedReaction: "量子温度域77 Kを維持するため、高温超伝導YBCO薄膜インダクタ(10 nH)を球状サブストレートに堆積。ダイヤモンド薄膜キャパシタ (耐圧100 V, 500 nF) が熱サイクル1 M回に耐久。冷却損失を抑えるため誘電正接 <1e-5 が必須条件となり、従来MLCCは排除された。",
           timestamp: new Date("2039-11-12")
         },
@@ -513,7 +513,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "positive",
           emoticon: "🚀",
           shortReaction: "量子IP×民生の夜明け",
-          shortDescription: "Consumer-grade quantum edge…",
+          shortDescription: "民生用量子エッジ...",
           detailedReaction: "ダイヤモンド育成ラインの設備投資が加速。専門ファウンドリ設立ラッシュで株価高騰。",
           timestamp: new Date("2039-11-13")
         },
@@ -522,7 +522,7 @@ function generateMobilePhoneResponse(query: string): ChatTimelineResponse {
           emotion: "concerned",
           emoticon: "🛰️",
           shortReaction: "輸出管理を強化",
-          shortDescription: "Quantum hardware dual-use…",
+          shortDescription: "量子ハードウェア軍民両用...",
           detailedReaction: "NV量子コアが軍事暗号解読に転用される懸念から、Wassenaarリストに新カテゴリ追加検討。",
           timestamp: new Date("2039-11-14")
         }
