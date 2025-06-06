@@ -107,7 +107,7 @@ export default function ExpertDetailPanel({ reaction, onClose }: ExpertDetailPan
             {reaction.timestamp && (
               <div className="pt-2">
                 <div className="text-gray-500 text-xs">
-                  {reaction.timestamp.toLocaleDateString('en-US', {
+                  {new Date(reaction.timestamp).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
