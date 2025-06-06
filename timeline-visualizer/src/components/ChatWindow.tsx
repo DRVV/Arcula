@@ -22,11 +22,23 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+interface ChatTimelineResponse {
+  chat: {
+    message: string;
+    timestamp: string;
+    sender: 'assistant';
+  };
+  timeline: {
+    events: TimelineEvent[];
+    append: boolean;
+  };
+}
+
 const ChatWindow = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
-      message: "Hello! I'm here to help you explore the timeline. Feel free to chat with me!",
+      message: "Hello! I'm here to help you explore the timeline. Ask me about any topic and I'll provide both insights and automatically add related timeline events to your visualization!",
       sentTime: "just now",
       sender: "Assistant",
       direction: "incoming",
@@ -37,7 +49,7 @@ const ChatWindow = () => {
   const [isTyping, setIsTyping] = useState(false);
   const { addEvents } = useTimeline();
 
-  const handleSend = (message: string) => {
+  const handleSend = async (message: string) => {
     const newMessage: ChatMessage = {
       message,
       sentTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -48,22 +60,60 @@ const ChatWindow = () => {
     };
 
     setMessages(prevMessages => [...prevMessages, newMessage]);
-
-    // Simulate assistant response
     setIsTyping(true);
-    setTimeout(() => {
-      const responses = [
-        "That's an interesting point about the timeline!",
-        "I can see you're exploring historical events. What period interests you most?",
-        "Thanks for sharing! The timeline visualization helps us understand these connections.",
-        "Great observation! Have you noticed any patterns in the events?",
-        "I understand. The timeline really puts things in perspective!",
-      ];
+
+    try {
+      console.log('🚀 Sending message to chat-timeline API:', message);
       
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      
+      const response = await fetch('/api/chat-timeline', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: message,
+          conversationId: 'chat-session-' + Date.now()
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const data: ChatTimelineResponse = await response.json();
+      console.log('✅ Received response from chat-timeline API:', data);
+
+      // Add the assistant's message
       const assistantMessage: ChatMessage = {
-        message: randomResponse,
+        message: data.chat.message,
+        sentTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        sender: "Assistant",
+        direction: "incoming",
+        position: "single",
+        timestamp: new Date(data.chat.timestamp)
+      };
+
+      setMessages(prevMessages => [...prevMessages, assistantMessage]);
+
+      // Automatically add timeline events to the graph
+      if (data.timeline.events && data.timeline.events.length > 0) {
+        console.log(`📊 Adding ${data.timeline.events.length} timeline events to graph`);
+        
+        // Convert date strings to Date objects
+        const eventsWithDates = data.timeline.events.map(event => ({
+          ...event,
+          date: new Date(event.date)
+        }));
+        
+        addEvents(eventsWithDates);
+      }
+
+    } catch (error) {
+      console.error('❌ Error calling chat-timeline API:', error);
+      
+      // Fallback error message
+      const errorMessage: ChatMessage = {
+        message: "I'm sorry, I'm having trouble responding right now. Please try again later.",
         sentTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         sender: "Assistant",
         direction: "incoming",
@@ -71,40 +121,12 @@ const ChatWindow = () => {
         timestamp: new Date()
       };
 
-      setMessages(prevMessages => [...prevMessages, assistantMessage]);
+      setMessages(prevMessages => [...prevMessages, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1000 + Math.random() * 2000);
-  };
-
-  const handleUpdateGraph = () => {
-    // Convert chat messages to timeline events
-    const chatEvents: TimelineEvent[] = messages.map((msg, index) => {
-      // Create a title from the first few words of the message
-      const words = msg.message.split(' ');
-      const title = words.slice(0, 5).join(' ') + (words.length > 5 ? '...' : '');
-      
-      return {
-        id: `chat-${msg.timestamp.getTime()}-${index}`,
-        date: msg.timestamp,
-        title: `${msg.sender}: ${title}`,
-        description: `[${msg.sentTime}] ${msg.sender}: ${msg.message}`,
-        category: ['chat-history'],
-        importance: 3 as 1 | 2 | 3 | 4 | 5
-      };
-    });
-
-    console.log('📊 Adding chat history to timeline:', chatEvents.length, 'messages');
-    addEvents(chatEvents);
-    
-    // Show a success indicator (could be a toast in the future)
-    const button = document.getElementById('update-graph-btn');
-    if (button) {
-      button.textContent = '✅ Updated!';
-      setTimeout(() => {
-        button.textContent = '📊 Update Graph';
-      }, 2000);
     }
   };
+
 
   return (
     <>
@@ -183,17 +205,6 @@ const ChatWindow = () => {
           )}
         </div>
         
-        {/* Update Graph button */}
-        <div className="bg-gray-800 border-t border-gray-700 p-3">
-          <button
-            id="update-graph-btn"
-            onClick={handleUpdateGraph}
-            className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors flex items-center justify-center gap-2 font-medium"
-            disabled={messages.length <= 1} // Disable if only initial message exists
-          >
-            <span>📊 Update Graph</span>
-          </button>
-        </div>
       </div>
     </>
   );
