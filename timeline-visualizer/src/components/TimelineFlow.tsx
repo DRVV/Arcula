@@ -18,6 +18,7 @@ import '@xyflow/react/dist/style.css';
 
 import { TimelineEvent } from '@/types/timeline';
 import EventNode from './EventNode';
+import DateLabelNode from './DateLabelNode';
 import { useTimeline } from '@/contexts/TimelineContext';
 import TimelineControls from './TimelineControls';
 import { format } from 'date-fns';
@@ -26,6 +27,7 @@ import { TIMELINE_LAYOUT } from '@/config/timelineLayout';
 // Register custom node types
 const nodeTypes: NodeTypes = {
   timelineEvent: EventNode,
+  dateLabel: DateLabelNode,
 };
 
 
@@ -121,7 +123,7 @@ const TimelineReference = ({
           strokeOpacity={0.8}
         />
         
-        {/* Event markers and date labels */}
+        {/* Event markers */}
         {events.map((event, i) => {
           const xPos = i * uniformSpacing + startOffset;
           
@@ -149,18 +151,6 @@ const TimelineReference = ({
                 strokeDasharray={`${5 / zoom} ${3 / zoom}`}
               />
               
-              {/* Date label below timeline */}
-              <text 
-                x={xPos} 
-                y={timelineY + (TIMELINE_LAYOUT.TYPOGRAPHY.DATE_LABEL_OFFSET / zoom)}
-                fontSize={TIMELINE_LAYOUT.TYPOGRAPHY.DATE_LABEL_FONT_SIZE / zoom} 
-                fill={TIMELINE_LAYOUT.TYPOGRAPHY.DATE_LABEL_COLOR} 
-                fontWeight={TIMELINE_LAYOUT.TYPOGRAPHY.DATE_LABEL_FONT_WEIGHT}
-                style={{ pointerEvents: 'none', userSelect: 'none' }}
-                textAnchor="middle"
-              >
-                {format(event.date, 'MMM yyyy')}
-              </text>
             </g>
           );
         })}
@@ -199,6 +189,7 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
     // All balloons at the same Y position (above timeline) using centralized config
     const y = TIMELINE_LAYOUT.BALLOON_Y;
     
+    // Create event node
     nodes.push({
       id: event.id,
       type: 'timelineEvent',
@@ -210,6 +201,26 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
         gridScale: (sortedEvents.length - 1) * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET * 2 // total width
       },
       draggable: true,
+    });
+    
+    // Create corresponding date label node
+    const dateLabelX = i * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET;
+    const dateLabelY = TIMELINE_LAYOUT.TIMELINE_Y + TIMELINE_LAYOUT.TYPOGRAPHY.DATE_LABEL_OFFSET;
+    
+    nodes.push({
+      id: `date-${event.id}`,
+      type: 'dateLabel',
+      position: { 
+        x: dateLabelX - 50, // Center the label (approximate width compensation)
+        y: dateLabelY 
+      },
+      data: {
+        date: event.date,
+        label: format(event.date, 'MMM yyyy')
+      },
+      draggable: false,
+      selectable: false,
+      focusable: false,
     });
   }
 

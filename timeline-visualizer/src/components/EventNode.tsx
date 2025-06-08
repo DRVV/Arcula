@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 
 import { useChat } from '@/contexts/ChatContext';
 import TechExpertBubble from './TechExpertBubble';
+import { TIMELINE_LAYOUT } from '@/config/timelineLayout';
 
 // Our component receives the standard props from React Flow
 export default function EventNode({ data }: { data: { event: TimelineEvent } }) {
@@ -83,32 +84,34 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
           borderColor: getImportanceColor(),
           borderWidth: `${event.importance}px`,
           boxShadow: getGlowEffect(),
-          width: expanded ? '300px' : '220px',
+          width: expanded ? `${TIMELINE_LAYOUT.NODE_POSITIONING.BALLOON_WIDTH_EXPANDED}px` : `${TIMELINE_LAYOUT.NODE_POSITIONING.BALLOON_WIDTH}px`,
           transform: isHighlighted ? 'translateY(-5px)' : 'none'
         }}
         onClick={handleClick}
       >
         {/* Speech balloon tail pointing down to timeline */}
         <div 
-          className="absolute -bottom-4 left-1/2 transform -translate-x-1/2"
+          className="absolute left-1/2 transform -translate-x-1/2"
           style={{ 
+            bottom: `-${TIMELINE_LAYOUT.EVENT_NODE_HEIGHTS.BALLOON_TAIL_OFFSET}px`,
             width: 0, 
             height: 0,
             borderLeft: '12px solid transparent',
             borderRight: '12px solid transparent',
-            borderTop: `16px solid ${getImportanceColor()}`,
+            borderTop: `${TIMELINE_LAYOUT.EVENT_NODE_HEIGHTS.BALLOON_TAIL_HEIGHT}px solid ${getImportanceColor()}`,
             filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
           }}
         />
         {/* Inner tail for clean appearance */}
         <div 
-          className="absolute -bottom-3 left-1/2 transform -translate-x-1/2"
+          className="absolute left-1/2 transform -translate-x-1/2"
           style={{ 
+            bottom: `-${TIMELINE_LAYOUT.EVENT_NODE_HEIGHTS.BALLOON_TAIL_OFFSET - 4}px`,
             width: 0, 
             height: 0,
             borderLeft: '10px solid transparent',
             borderRight: '10px solid transparent',
-            borderTop: `14px solid ${isHighlighted ? 'rgba(30, 41, 59, 0.9)' : 'rgba(17, 24, 39, 0.8)'}`,
+            borderTop: `${TIMELINE_LAYOUT.EVENT_NODE_HEIGHTS.BALLOON_TAIL_HEIGHT - 2}px solid ${isHighlighted ? 'rgba(30, 41, 59, 0.9)' : 'rgba(17, 24, 39, 0.8)'}`,
           }}
         />
         {/* Highlight indicator */}
@@ -135,7 +138,10 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
         
         {/* Image display - always visible when available */}
         {event.media && event.media[0] ? (
-          <div className="mb-3 relative w-full h-32 rounded-lg overflow-hidden border border-gray-700 bg-gray-800">
+          <div 
+            className="mb-3 relative w-full rounded-lg overflow-hidden border border-gray-700 bg-gray-800"
+            style={{ height: `${TIMELINE_LAYOUT.EVENT_NODE_HEIGHTS.IMAGE_HEIGHT}px` }}
+          >
             {event.media[0].type === 'image' && (
               <img
                 src={event.media[0].url}
@@ -161,7 +167,10 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
           </div>
         ) : (
           /* Elegant fallback for events without images */
-          <div className="mb-3 relative w-full h-20 rounded-lg border-2 border-dashed border-gray-600 bg-gray-800/50 flex items-center justify-center">
+          <div 
+            className="mb-3 relative w-full rounded-lg border-2 border-dashed border-gray-600 bg-gray-800/50 flex items-center justify-center"
+            style={{ height: `${TIMELINE_LAYOUT.EVENT_NODE_HEIGHTS.FALLBACK_HEIGHT}px` }}
+          >
             <div className="text-gray-500 text-center">
               <svg className="w-6 h-6 mx-auto mb-1 opacity-50" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd"></path>
@@ -174,7 +183,7 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
         <h3 className="text-base font-medium text-white mb-2 leading-tight">{event.title}</h3>
         
         {/* Categories - limit to 3 for space */}
-        <div className="flex flex-wrap gap-1 my-2">
+        {/* <div className="flex flex-wrap gap-1 my-2">
           {event.category.slice(0, 3).map((cat: string) => (
             <span 
               key={cat} 
@@ -187,7 +196,7 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
           {event.category.length > 3 && (
             <span className="text-xs text-gray-400">+{event.category.length - 3} more</span>
           )}
-        </div>
+        </div> */}
         
         {/* Only show description and media when expanded */}
         {expanded && (

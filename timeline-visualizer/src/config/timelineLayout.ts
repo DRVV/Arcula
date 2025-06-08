@@ -27,6 +27,15 @@ export const TIMELINE_LAYOUT = {
     BALLOON_WIDTH_EXPANDED: 300,   // Width when expanded
   },
   
+  // Event node height configurations
+  // All event node heights are controlled from this central location
+  EVENT_NODE_HEIGHTS: {
+    IMAGE_HEIGHT: 128,             // Height for event images (h-32 = 128px)
+    FALLBACK_HEIGHT: 80,           // Height for fallback placeholder (h-20 = 80px)
+    BALLOON_TAIL_HEIGHT: 16,       // Height of the speech balloon tail
+    BALLOON_TAIL_OFFSET: 16,       // Bottom offset for the tail positioning
+  },
+  
   // Derived calculations (using getters for dynamic values)
   get BALLOON_Y() {
     // Position balloons so they center with the timeline and labels

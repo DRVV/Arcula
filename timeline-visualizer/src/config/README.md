@@ -14,6 +14,22 @@ All y-coordinates and positioning values for the timeline components are defined
 - **UNIFORM_SPACING**: Horizontal spacing between events (default: 400px)
 - **START_OFFSET**: Left margin from timeline start (default: 200px)
 
+### Event Node Height Configuration:
+
+All event node heights are centrally controlled through `EVENT_NODE_HEIGHTS`:
+
+- **IMAGE_HEIGHT**: Height for event images (default: 128px)
+- **FALLBACK_HEIGHT**: Height for fallback placeholder when no image (default: 80px)
+- **BALLOON_TAIL_HEIGHT**: Height of the speech balloon tail (default: 16px)
+- **BALLOON_TAIL_OFFSET**: Bottom offset for tail positioning (default: 16px)
+
+### Node Positioning Configuration:
+
+- **BALLOON_WIDTH**: Default width of event balloons (default: 220px)
+- **BALLOON_WIDTH_EXPANDED**: Width when expanded (default: 300px)
+- **BALLOON_HEIGHT_ESTIMATE**: Estimated height for centering calculations (default: 180px)
+- **BALLOON_OFFSET_FROM_TIMELINE**: Distance above timeline for balloon positioning (default: 350px)
+
 ### Derived Values (Calculated Automatically):
 
 - **TIMELINE_LABEL_Y**: Position of date labels below timeline
@@ -37,6 +53,7 @@ All components will automatically use the updated values without requiring chang
 ### Components Using This Configuration:
 
 - `TimelineFlow.tsx` - Main timeline layout and positioning
+- `EventNode.tsx` - Event balloon dimensions and heights
 - `TechExpertBubble.tsx` - Expert reaction bubble positioning
 - Any future components that need timeline positioning
 
