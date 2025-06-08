@@ -74,8 +74,9 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
 
   return (
     <div className="relative timeline-event-container">
+      {/* Speech balloon with tail pointing down */}
       <div 
-        className={`rounded-lg backdrop-blur-md border transition-all duration-200 ${
+        className={`relative rounded-2xl backdrop-blur-md border transition-all duration-200 ${
           expanded ? 'scale-105 z-20' : 'hover:scale-105'
         } ${isHighlighted ? 'bg-indigo-950 bg-opacity-90' : 'bg-gray-900 bg-opacity-80'}`}
         style={{ 
@@ -87,6 +88,29 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
         }}
         onClick={handleClick}
       >
+        {/* Speech balloon tail pointing down to timeline */}
+        <div 
+          className="absolute -bottom-4 left-1/2 transform -translate-x-1/2"
+          style={{ 
+            width: 0, 
+            height: 0,
+            borderLeft: '12px solid transparent',
+            borderRight: '12px solid transparent',
+            borderTop: `16px solid ${getImportanceColor()}`,
+            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+          }}
+        />
+        {/* Inner tail for clean appearance */}
+        <div 
+          className="absolute -bottom-3 left-1/2 transform -translate-x-1/2"
+          style={{ 
+            width: 0, 
+            height: 0,
+            borderLeft: '10px solid transparent',
+            borderRight: '10px solid transparent',
+            borderTop: `14px solid ${isHighlighted ? 'rgba(30, 41, 59, 0.9)' : 'rgba(17, 24, 39, 0.8)'}`,
+          }}
+        />
         {/* Highlight indicator */}
         {isHighlighted && (
           <div className="absolute -top-2 -right-2 bg-white p-1 rounded-full animate-pulse z-10">

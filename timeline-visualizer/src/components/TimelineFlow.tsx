@@ -20,6 +20,7 @@ import { TimelineEvent } from '@/types/timeline';
 import EventNode from './EventNode';
 import { useTimeline } from '@/contexts/TimelineContext';
 import TimelineControls from './TimelineControls';
+import { format } from 'date-fns';
 
 // Register custom node types
 const nodeTypes: NodeTypes = {
@@ -32,64 +33,27 @@ const formatYearMonth = (date: Date): string => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 };
 
-// Custom TimeGrid component that integrates with ReactFlow's transformation system
-const TimeGrid = ({ 
-  minDate, 
-  maxDate, 
-  gridScale,
+// Timeline component that renders the horizontal timeline and date labels
+const TimelineReference = ({ 
+  events,
+  uniformSpacing,
+  startOffset,
+  timelineY
 }: { 
-  minDate: Date, 
-  maxDate: Date, 
-  gridScale: number,
+  events: TimelineEvent[],
+  uniformSpacing: number,
+  startOffset: number,
+  timelineY: number
 }) => {
-  // Use React Flow's transform store values directly
   const { zoom, x, y } = useViewport();
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight); // Initialize with window height
-  const gridRef = useRef<HTMLDivElement>(null);
-  const timeRange = maxDate.getTime() - minDate.getTime();
   
-  // Update viewport height on mount and resize
-  useEffect(() => {
-    const updateHeight = () => {
-      // Use the height of the ReactFlow viewport if available, otherwise window height
-      const rfViewport = gridRef.current?.closest('.react-flow__viewport');
-      setViewportHeight(rfViewport ? rfViewport.clientHeight : window.innerHeight);
-    };
-    
-    updateHeight(); // Initial call
-    
-    // Debounce resize listener for performance
-    let resizeTimeout: NodeJS.Timeout;
-    const handleResize = () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(updateHeight, 100);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => {
-      clearTimeout(resizeTimeout);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+  if (events.length === 0) return null;
   
-  // Calculate visibility thresholds based on zoom
-  const showMonths = zoom >= 0.3; // Show months at a lower zoom level
-  const showYearLabels = zoom >= 0.1; // Show year labels earlier
-  
-  // Adjust opacity based on zoom
-  const yearOpacity = Math.min(0.8, zoom * 0.8); // Make years more prominent
-  const monthOpacity = Math.min(0.6, zoom * 0.5); // Adjust month opacity
-  
-  // Calculate range of years based on current viewport
-  const viewportStartDate = minDate.getTime();
-  const viewportEndDate = maxDate.getTime();
-  const startYear = new Date(viewportStartDate).getFullYear();
-  const endYear = new Date(viewportEndDate).getFullYear();
+  const timelineWidth = (events.length - 1) * uniformSpacing + startOffset * 2;
   
   return (
     <div 
-      ref={gridRef}
-      className="react-flow__grid-pane" 
+      className="react-flow__timeline-reference" 
       style={{ 
         position: 'absolute',
         top: 0,
@@ -97,91 +61,72 @@ const TimeGrid = ({
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
-        // This is crucial: apply the same transform as ReactFlow's pane
         transform: `translate(${x}px, ${y}px) scale(${zoom})`,
         transformOrigin: '0 0',
       }}
     >
       <svg 
-        width={gridScale} 
-        height={viewportHeight / zoom} // Adjust SVG height based on zoom
-        className="react-flow__grid"
+        width={timelineWidth} 
+        height={600}
+        className="react-flow__timeline"
         style={{ 
           position: 'absolute', 
           top: 0,
           left: 0,
-          overflow: 'visible' // Allow labels to be visible outside SVG bounds
+          overflow: 'visible'
         }}
       >
-        {/* Year lines */}
-        {Array.from({ length: endYear - startYear + 1 }, (_, i) => {
-          const year = startYear + i;
-          const yearDate = new Date(year, 0, 1);
-          if (yearDate < minDate) return null;
-          
-          const xPos = ((yearDate.getTime() - minDate.getTime()) / timeRange) * gridScale;
+        {/* Main horizontal timeline */}
+        <line 
+          x1={startOffset} 
+          y1={timelineY} 
+          x2={timelineWidth - startOffset} 
+          y2={timelineY}
+          stroke="#6B7280" 
+          strokeWidth={3 / zoom} 
+          strokeOpacity={0.8}
+        />
+        
+        {/* Event markers and date labels */}
+        {events.map((event, i) => {
+          const xPos = i * uniformSpacing + startOffset;
           
           return (
-            <g key={`year-${year}`}>
-              <line 
-                x1={xPos} 
-                y1={0} 
-                x2={xPos} 
-                y2={viewportHeight / zoom} // Line fills the adjusted SVG height
-                stroke="#4B5563" 
-                strokeWidth={2 / zoom} 
-                strokeOpacity={yearOpacity}
+            <g key={`timeline-${event.id}`}>
+              {/* Event marker on timeline */}
+              <circle
+                cx={xPos}
+                cy={timelineY}
+                r={6 / zoom}
+                fill="#3B82F6"
+                stroke="#1E40AF"
+                strokeWidth={2 / zoom}
               />
-              {/* Year marker - fixed position at bottom of graph */}
-              {showYearLabels && (
-                <g>
-                  {/* Year label with background rectangle for better visibility */}
-                  <rect
-                    x={xPos - (1 / zoom)}
-                    y={viewportHeight / zoom - (25 / zoom)}
-                    width={30 / zoom}
-                    height={16 / zoom}
-                    rx={3 / zoom}
-                    fill="#0F172A"
-                    fillOpacity={0.7}
-                  />
-                  <text 
-                    x={xPos + (5 / zoom)} 
-                    y={viewportHeight / zoom - (13 / zoom)}
-                    fontSize={12 / zoom} 
-                    fill="#FFFFFF" 
-                    fontWeight="bold"
-                    style={{ pointerEvents: 'none', userSelect: 'none' }}
-                    textAnchor="start"
-                  >
-                    {year}
-                  </text>
-                </g>
-              )}
               
-              {/* Month lines for this year */}
-              {showMonths && Array.from({ length: 12 }, (_, j) => {
-                const month = j;
-                const monthDate = new Date(year, month, 1);
-                if (monthDate < minDate || monthDate > maxDate) return null;
-                
-                const monthXPos = ((monthDate.getTime() - minDate.getTime()) / timeRange) * gridScale;
-                
-                return (
-                  <g key={`month-${year}-${month}`}>
-                    <line 
-                      x1={monthXPos} 
-                      y1={0} 
-                      x2={monthXPos} 
-                      y2={viewportHeight / zoom} 
-                      stroke="#374151" 
-                      strokeWidth={1 / zoom} 
-                      strokeOpacity={monthOpacity}
-                    />
-                    {/* Month labels removed */}
-                  </g>
-                );
-              })}
+              {/* Vertical connector line from timeline to balloon */}
+              <line
+                x1={xPos}
+                y1={timelineY}
+                x2={xPos}
+                y2={150} // balloon Y position
+                stroke="#6B7280"
+                strokeWidth={2 / zoom}
+                strokeOpacity={0.6}
+                strokeDasharray={`${5 / zoom} ${3 / zoom}`}
+              />
+              
+              {/* Date label below timeline */}
+              <text 
+                x={xPos} 
+                y={timelineY + (30 / zoom)}
+                fontSize={12 / zoom} 
+                fill="#D1D5DB" 
+                fontWeight="500"
+                style={{ pointerEvents: 'none', userSelect: 'none' }}
+                textAnchor="middle"
+              >
+                {format(event.date, 'MMM yyyy')}
+              </text>
             </g>
           );
         })}
@@ -190,57 +135,39 @@ const TimeGrid = ({
   );
 };
 
-// Function to create nodes and edges from timeline events
+// Function to create nodes and edges from timeline events with equal spacing
 const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: Edge[]; minDate: Date; maxDate: Date } => {
   // Handle empty events array
   if (events.length === 0) {
     return { nodes: [], edges: [], minDate: new Date(), maxDate: new Date() };
   }
   
-  // Sort events by date
+  // Sort events by date to maintain chronological order
   const sortedEvents = [...events].sort((a, b) => a.date.getTime() - b.date.getTime());
   
-  // Find earliest and latest dates for scaling
+  // Constants for equal spacing layout
+  const UNIFORM_SPACING = 400; // pixels between events
+  const START_OFFSET = 200; // starting offset from left
+  const BALLOON_Y = 150; // fixed Y position for all balloons (above timeline)
+  
+  // Find earliest and latest dates for reference (not used for positioning)
   const minDate = new Date(sortedEvents[0].date);
-  // Add buffer months at the beginning and end
-  minDate.setMonth(minDate.getMonth() - 3);
-  
   const maxDate = new Date(sortedEvents[sortedEvents.length - 1].date);
-  maxDate.setMonth(maxDate.getMonth() + 3);
-  
-  const timeRange = maxDate.getTime() - minDate.getTime();
-  const gridScale = 10000; // Total width of the timeline in pixels
   
   // Log the events to make sure they're being filtered correctly
-  console.log(`Processing ${sortedEvents.length} events from ${minDate.toISOString()} to ${maxDate.toISOString()}`);
+  console.log(`Processing ${sortedEvents.length} events with equal spacing layout`);
 
-  // Position timeline event nodes based on their exact dates
+  // Position timeline event nodes with equal spacing
   const nodes: Node[] = [];
-  const rowAssignments: { [key: string]: number } = {}; // Track which rows are used for each month
-  const eventNodePositions: { [key: string]: { x: number; y: number } } = {}; // Store positions for reaction placement
   
   for (let i = 0; i < sortedEvents.length; i++) {
     const event = sortedEvents[i];
     
-    // Calculate x position based on exact date
-    const x = ((event.date.getTime() - minDate.getTime()) / timeRange) * gridScale;
+    // Calculate x position with uniform spacing
+    const x = i * UNIFORM_SPACING + START_OFFSET;
     
-    // Group events by year-month for vertical positioning
-    const yearMonth = formatYearMonth(event.date);
-    
-    // Assign row based on how many events are already in this month
-    if (!rowAssignments[yearMonth]) {
-      rowAssignments[yearMonth] = 0;
-    }
-    
-    const row = rowAssignments[yearMonth] % 2;
-    rowAssignments[yearMonth]++;
-    
-    // Y position alternates between two rows
-    const y = 200 + row * 150;
-    
-    // Store position for reaction placement
-    eventNodePositions[event.id] = { x, y };
+    // All balloons at the same Y position (above timeline)
+    const y = BALLOON_Y;
     
     nodes.push({
       id: event.id,
@@ -250,14 +177,14 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
         event,
         minDate,
         maxDate,
-        gridScale
+        gridScale: (sortedEvents.length - 1) * UNIFORM_SPACING + START_OFFSET * 2 // total width
       },
       draggable: true,
     });
   }
 
   // Log the created nodes to debug
-  console.log(`Created ${nodes.length} nodes`);
+  console.log(`Created ${nodes.length} nodes with equal spacing`);
   
   // Create edges connecting events chronologically
   const edges: Edge[] = [];
@@ -275,8 +202,6 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
       animated: true,
     });
   }
-  
-
   
   return { nodes, edges, minDate, maxDate };
 };
@@ -359,11 +284,12 @@ const TimelineFlowInner = () => {
         panOnDrag={true}
       >
         
-        {/* Custom time grid that transforms with viewport */}
-        <TimeGrid 
-          minDate={timeRange.minDate} 
-          maxDate={timeRange.maxDate} 
-          gridScale={timeRange.gridScale}
+        {/* Timeline reference with equal spacing */}
+        <TimelineReference 
+          events={filteredEvents}
+          uniformSpacing={400}
+          startOffset={200}
+          timelineY={400}
         />
         {/* <Controls className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-none shadow-lg rounded-lg" /> */}
         <MiniMap 
