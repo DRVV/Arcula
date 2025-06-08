@@ -152,10 +152,10 @@ const TimelineReference = ({
               {/* Date label below timeline */}
               <text 
                 x={xPos} 
-                y={timelineY + (30 / zoom)}
-                fontSize={12 / zoom} 
-                fill="#D1D5DB" 
-                fontWeight="500"
+                y={timelineY + (TIMELINE_LAYOUT.TYPOGRAPHY.DATE_LABEL_OFFSET / zoom)}
+                fontSize={TIMELINE_LAYOUT.TYPOGRAPHY.DATE_LABEL_FONT_SIZE / zoom} 
+                fill={TIMELINE_LAYOUT.TYPOGRAPHY.DATE_LABEL_COLOR} 
+                fontWeight={TIMELINE_LAYOUT.TYPOGRAPHY.DATE_LABEL_FONT_WEIGHT}
                 style={{ pointerEvents: 'none', userSelect: 'none' }}
                 textAnchor="middle"
               >
@@ -193,7 +193,8 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
     const event = sortedEvents[i];
     
     // Calculate x position with uniform spacing using centralized config
-    const x = i * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET;
+    // Offset by half the balloon width so the center of the balloon aligns with the timeline dot
+    const x = i * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET - (TIMELINE_LAYOUT.NODE_POSITIONING.BALLOON_WIDTH / 2);
     
     // All balloons at the same Y position (above timeline) using centralized config
     const y = TIMELINE_LAYOUT.BALLOON_Y;
