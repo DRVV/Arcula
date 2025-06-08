@@ -23,11 +23,29 @@ const HomePageContent = () => {
       
       {/* Add padding-top to account for the fixed header */}
       <main className="w-full h-full pt-14 relative">
-        {hasStartedChat && <DynamicTimelineFlow />}
-        <ChatWindow 
-          hasStartedChat={hasStartedChat}
-          onFirstMessage={handleFirstMessage} 
-        />
+        {!hasStartedChat ? (
+          // Welcome screen - full width
+          <ChatWindow 
+            hasStartedChat={hasStartedChat}
+            onFirstMessage={handleFirstMessage} 
+          />
+        ) : (
+          // Full screen timeline with compact bottom chat panel
+          <div className="h-full relative">
+            {/* Timeline visualization - full screen background */}
+            <div className="w-full h-full">
+              <DynamicTimelineFlow />
+            </div>
+            
+            {/* Chat window - compact bottom panel */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 w-96 max-w-[90vw]">
+              <ChatWindow 
+                hasStartedChat={hasStartedChat}
+                onFirstMessage={handleFirstMessage} 
+              />
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

@@ -46,11 +46,6 @@ const ChatWindow = ({ hasStartedChat, onFirstMessage }: ChatWindowProps) => {
   const { addEvents } = useTimeline();
 
   const handleSend = async (message: string) => {
-    // If this is the first message, trigger the layout change
-    if (!hasStartedChat) {
-      onFirstMessage();
-    }
-
     const newMessage: ChatMessage = {
       message,
       sentTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -60,8 +55,14 @@ const ChatWindow = ({ hasStartedChat, onFirstMessage }: ChatWindowProps) => {
       timestamp: new Date()
     };
 
+    // Add the message first
     setMessages(prevMessages => [...prevMessages, newMessage]);
     setIsTyping(true);
+
+    // If this is the first message, trigger the layout change after adding the message
+    if (!hasStartedChat) {
+      onFirstMessage();
+    }
 
     try {
       console.log('🚀 Sending message to chat-timeline API:', message);
@@ -129,7 +130,7 @@ const ChatWindow = ({ hasStartedChat, onFirstMessage }: ChatWindowProps) => {
   };
 
   return (
-    <div className="absolute inset-0 flex flex-col">
+    <div className="h-full flex flex-col">
       <AnimatePresence mode="wait">
         {!hasStartedChat ? (
           // Initial centered layout
@@ -181,53 +182,58 @@ const ChatWindow = ({ hasStartedChat, onFirstMessage }: ChatWindowProps) => {
             </motion.div>
           </motion.div>
         ) : (
-          // Full chat layout
+          // Compact transparent chat panel
           <motion.div
             key="chat"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="h-full flex flex-col"
+            className="flex flex-col bg-black/20 backdrop-blur-md border border-gray-700/50 rounded-lg shadow-2xl overflow-hidden"
+            style={{ minHeight: '60px', maxHeight: '300px' }}
           >
-            {/* Message List */}
-            <motion.div 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-              className="flex-1 overflow-hidden"
-              style={{ background: '#1f2937' }}
-            >
-              <MainContainer style={{ border: 'none', borderRadius: '0', height: '100%' }}>
-                <ChatContainer style={{ background: 'transparent', height: '100%' }}>
-                  <MessageList
-                    scrollBehavior="smooth"
-                    typingIndicator={isTyping ? <TypingIndicator content="Assistant is typing..." style={{ background: '#374151', color: '#e5e7eb' }} /> : null}
-                    style={{ background: 'transparent' }}
-                  >
-                    {messages.map((message, index) => (
-                      <Message
-                        key={index}
-                        model={{
-                          message: message.message,
-                          sentTime: message.sentTime,
-                          sender: message.sender,
-                          direction: message.direction,
-                          position: message.position
-                        }}
-                      />
-                    ))}
-                  </MessageList>
-                </ChatContainer>
-              </MainContainer>
-            </motion.div>
+            {/* Compact Message List */}
+            {messages.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                transition={{ duration: 0.3 }}
+                className="flex-1 overflow-hidden bg-gray-900/30 border-b border-gray-600/30"
+                style={{ height: '180px' }}
+              >
+                <div style={{ height: '100%', padding: '8px' }}>
+                  <MainContainer style={{ border: 'none', borderRadius: '8px', height: '100%', background: 'transparent' }}>
+                    <ChatContainer style={{ background: 'transparent', height: '100%' }}>
+                      <MessageList
+                        scrollBehavior="smooth"
+                        typingIndicator={isTyping ? <TypingIndicator content="Assistant is typing..." style={{ background: 'rgba(55, 65, 81, 0.8)', color: '#e5e7eb' }} /> : null}
+                        style={{ background: 'transparent', padding: '4px' }}
+                      >
+                        {messages.map((message, index) => (
+                          <Message
+                            key={index}
+                            model={{
+                              message: message.message,
+                              sentTime: message.sentTime,
+                              sender: message.sender,
+                              direction: message.direction,
+                              position: message.position
+                            }}
+                          />
+                        ))}
+                      </MessageList>
+                    </ChatContainer>
+                  </MainContainer>
+                </div>
+              </motion.div>
+            )}
 
-            {/* Docked MessageInput */}
+            {/* Compact MessageInput */}
             <motion.div
               layoutId="message-input"
               initial={{ y: 20 }}
               animate={{ y: 0 }}
               transition={{ delay: 0.3, duration: 0.4 }}
-              className="border-t border-gray-700 bg-gray-900"
+              className={`${messages.length > 0 ? 'border-t border-gray-600/30' : ''} bg-gray-900/50`}
             >
               <MessageInput 
                 placeholder="Type your message here..." 
@@ -235,9 +241,10 @@ const ChatWindow = ({ hasStartedChat, onFirstMessage }: ChatWindowProps) => {
                 disabled={isTyping}
                 attachButton={false}
                 style={{ 
-                  background: '#111827', 
+                  background: 'rgba(17, 24, 39, 0.8)', 
                   border: 'none',
-                  color: '#e5e7eb'
+                  color: '#e5e7eb',
+                  fontSize: '14px'
                 }}
               />
             </motion.div>
