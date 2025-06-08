@@ -33,6 +33,45 @@ const formatYearMonth = (date: Date): string => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 };
 
+// Utility function to calculate content bounds
+const calculateContentBounds = (events: TimelineEvent[]) => {
+  if (events.length === 0) return { centerX: 0, centerY: 0, contentWidth: 0, contentHeight: 0 };
+  
+  // Current fixed positions from createNodesAndEdges
+  const UNIFORM_SPACING = 400;
+  const START_OFFSET = 200;
+  const BALLOON_Y = 150;
+  const TIMELINE_Y = 400;
+  
+  // Calculate content bounds
+  const contentWidth = (events.length - 1) * UNIFORM_SPACING + START_OFFSET * 2;
+  const contentHeight = TIMELINE_Y - BALLOON_Y + 100; // Add some padding
+  
+  // Calculate center point
+  const centerX = contentWidth / 2;
+  const centerY = (BALLOON_Y + TIMELINE_Y) / 2;
+  
+  return { centerX, centerY, contentWidth, contentHeight };
+};
+
+// Utility function to calculate initial viewport for centering content
+const calculateInitialViewport = (
+  events: TimelineEvent[], 
+  containerWidth: number, 
+  containerHeight: number,
+  zoom: number = 0.5
+) => {
+  if (events.length === 0) return { x: 0, y: 0, zoom };
+  
+  const { centerX, centerY } = calculateContentBounds(events);
+  
+  // Calculate viewport position to center the content
+  const x = (containerWidth / 2) - (centerX * zoom);
+  const y = (containerHeight / 2) - (centerY * zoom);
+  
+  return { x, y, zoom };
+};
+
 // Timeline component that renders the horizontal timeline and date labels
 const TimelineReference = ({ 
   events,
@@ -220,6 +259,44 @@ const TimelineFlowInner = () => {
     gridScale: 10000
   });
   
+  // Container dimension detection
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerDimensions, setContainerDimensions] = useState({ width: 800, height: 600 });
+  const [initialViewport, setInitialViewport] = useState({ x: 0, y: 0, zoom: 0.5 });
+  
+  // Detect container dimensions
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const { width, height } = containerRef.current.getBoundingClientRect();
+        setContainerDimensions({ width, height });
+      }
+    };
+    
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+  
+  // Apply viewport centering when events or container dimensions change
+  useEffect(() => {
+    if (filteredEvents.length > 0 && containerDimensions.width > 0 && reactFlowInstance) {
+      const viewport = calculateInitialViewport(
+        filteredEvents,
+        containerDimensions.width,
+        containerDimensions.height,
+        0.5 // desired zoom level
+      );
+      
+      console.log(`🎯 Applying viewport:`, viewport);
+      
+      // Use setViewport to programmatically center the content
+      setTimeout(() => {
+        reactFlowInstance.setViewport(viewport, { duration: 300 });
+      }, 100);
+    }
+  }, [filteredEvents, containerDimensions, reactFlowInstance]);
+  
   // Create nodes/edges whenever filteredEvents changes
   useEffect(() => {
     console.log(`🎨 TimelineFlow: Creating nodes from ${filteredEvents.length} filtered events`);
@@ -262,18 +339,15 @@ const TimelineFlowInner = () => {
   // }, [nodes, reactFlowInstance]);
   
   return (
-    <div style={{ width: '100%', height: '100%' }} className="bg-gray-950">
+    <div ref={containerRef} style={{ width: '100%', height: '100%' }} className="bg-gray-950">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
-        // Remove fitView prop as it overrides our zoom setting
-        // fitView
-        // fitViewOptions={{ padding: 0.2 }}
         minZoom={0.1}
         maxZoom={2}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.5 }}
+        defaultViewport={initialViewport}
         proOptions={{ hideAttribution: true }}
         snapToGrid={false}
         snapGrid={[20, 20]}
