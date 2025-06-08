@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 import { 
   MainContainer, 
@@ -34,22 +35,22 @@ interface ChatTimelineResponse {
   };
 }
 
-const ChatWindow = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      message: "Hello! I'm here to help you explore the timeline. Ask me about any topic and I'll provide both insights and automatically add related timeline events to your visualization!",
-      sentTime: "just now",
-      sender: "Assistant",
-      direction: "incoming",
-      position: "single",
-      timestamp: new Date()
-    }
-  ]);
+interface ChatWindowProps {
+  hasStartedChat: boolean;
+  onFirstMessage: () => void;
+}
+
+const ChatWindow = ({ hasStartedChat, onFirstMessage }: ChatWindowProps) => {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const { addEvents } = useTimeline();
 
   const handleSend = async (message: string) => {
+    // If this is the first message, trigger the layout change
+    if (!hasStartedChat) {
+      onFirstMessage();
+    }
+
     const newMessage: ChatMessage = {
       message,
       sentTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -127,86 +128,123 @@ const ChatWindow = () => {
     }
   };
 
-
   return (
-    <>
-      {/* Chat toggle button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-600 to-indigo-800 text-white rounded-full shadow-xl flex items-center justify-center hover:from-indigo-700 hover:to-indigo-900 transition-all z-50 ${!isOpen ? 'animate-pulse-slow' : ''}`}
-        aria-label={isOpen ? "Close chat" : "Open chat"}
-      >
-        {isOpen ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-          </svg>
-        )}
-      </button>
+    <div className="absolute inset-0 flex flex-col">
+      <AnimatePresence mode="wait">
+        {!hasStartedChat ? (
+          // Initial centered layout
+          <motion.div
+            key="initial"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="h-full flex flex-col items-center justify-center px-8"
+          >
+            {/* Welcome Message */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="text-center mb-8 max-w-2xl"
+            >
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-4">
+                Welcome to Timeline Explorer
+              </h1>
+              <p className="text-xl text-gray-300 leading-relaxed">
+                Ask me anything about technology history and I'll provide insights while building an interactive timeline visualization for you.
+              </p>
+            </motion.div>
 
-      {/* Chat window */}
-      <div 
-        className={`fixed bottom-24 right-6 w-96 sm:w-[28rem] lg:w-[32rem] bg-gray-900 border border-gray-800 rounded-lg shadow-xl flex flex-col z-50 transition-all duration-300 ease-in-out overflow-hidden ${
-          isOpen ? 'h-[28rem] lg:h-[32rem] opacity-100' : 'h-0 opacity-0 pointer-events-none'
-        }`}
-      >
-        {/* Chat header */}
-        <div className="bg-gradient-to-r from-indigo-800 to-indigo-900 px-4 py-2 flex items-center justify-between border-b border-indigo-700 shadow-md">
-          <h3 className="text-white font-medium flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            Timeline Chat
-          </h3>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 bg-green-500 rounded-full shadow-inner"></span>
-          </div>
-        </div>
-        
-        {/* Chat container */}
-        <div className="flex-1 overflow-hidden" style={{ background: '#1f2937' }}>
-          {isOpen && (
-            <MainContainer style={{ border: 'none', borderRadius: '0' }}>
-              <ChatContainer style={{ background: 'transparent' }}>
-                <MessageList
-                  scrollBehavior="smooth"
-                  typingIndicator={isTyping ? <TypingIndicator content="Assistant is typing..." style={{ background: '#374151', color: '#e5e7eb' }} /> : null}
-                  style={{ background: 'transparent' }}
-                >
-                  {messages.map((message, index) => (
-                    <Message
-                      key={index}
-                      model={{
-                        message: message.message,
-                        sentTime: message.sentTime,
-                        sender: message.sender,
-                        direction: message.direction,
-                        position: message.position
-                      }}
-                    />
-                  ))}
-                </MessageList>
+            {/* Centered MessageInput */}
+            <motion.div
+              layoutId="message-input"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="w-full max-w-2xl"
+            >
+              <div className="bg-gray-900 border border-gray-700 rounded-lg overflow-hidden shadow-xl">
                 <MessageInput 
-                  placeholder="Type your message here..." 
+                  placeholder="Start exploring by typing your question here..."
                   onSend={handleSend}
                   disabled={isTyping}
-                  attachButton={false}  // This removes the clip/attachment icon
+                  attachButton={false}
                   style={{ 
                     background: '#111827', 
-                    borderTop: '1px solid #374151',
-                    color: '#e5e7eb'
+                    border: 'none',
+                    color: '#e5e7eb',
+                    fontSize: '16px'
                   }}
                 />
-              </ChatContainer>
-            </MainContainer>
-          )}
-        </div>
-        
-      </div>
-    </>
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : (
+          // Full chat layout
+          <motion.div
+            key="chat"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4 }}
+            className="h-full flex flex-col"
+          >
+            {/* Message List */}
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+              className="flex-1 overflow-hidden"
+              style={{ background: '#1f2937' }}
+            >
+              <MainContainer style={{ border: 'none', borderRadius: '0', height: '100%' }}>
+                <ChatContainer style={{ background: 'transparent', height: '100%' }}>
+                  <MessageList
+                    scrollBehavior="smooth"
+                    typingIndicator={isTyping ? <TypingIndicator content="Assistant is typing..." style={{ background: '#374151', color: '#e5e7eb' }} /> : null}
+                    style={{ background: 'transparent' }}
+                  >
+                    {messages.map((message, index) => (
+                      <Message
+                        key={index}
+                        model={{
+                          message: message.message,
+                          sentTime: message.sentTime,
+                          sender: message.sender,
+                          direction: message.direction,
+                          position: message.position
+                        }}
+                      />
+                    ))}
+                  </MessageList>
+                </ChatContainer>
+              </MainContainer>
+            </motion.div>
+
+            {/* Docked MessageInput */}
+            <motion.div
+              layoutId="message-input"
+              initial={{ y: 20 }}
+              animate={{ y: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              className="border-t border-gray-700 bg-gray-900"
+            >
+              <MessageInput 
+                placeholder="Type your message here..." 
+                onSend={handleSend}
+                disabled={isTyping}
+                attachButton={false}
+                style={{ 
+                  background: '#111827', 
+                  border: 'none',
+                  color: '#e5e7eb'
+                }}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 
