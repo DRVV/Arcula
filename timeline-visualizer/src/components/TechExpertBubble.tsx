@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ReactionData } from '@/types/timeline';
 import ExpertDetailPanel from './ExpertDetailPanel';
+import { TIMELINE_LAYOUT } from '@/config/timelineLayout';
 
 interface TechExpertBubbleProps {
   reactions: ReactionData[];
@@ -29,7 +30,7 @@ export default function TechExpertBubble({ reactions, eventId }: TechExpertBubbl
   return (
     <>
       <div 
-        className="absolute top-full mt-4 left-1/2 -translate-x-1/2 z-30 cursor-pointer"
+        className={`absolute top-full mt-${TIMELINE_LAYOUT.EXPERT_BUBBLE_OFFSET} left-1/2 -translate-x-1/2 z-30 cursor-pointer`}
         style={{ pointerEvents: 'auto' }}
         onClick={handleBubbleClick}
       >

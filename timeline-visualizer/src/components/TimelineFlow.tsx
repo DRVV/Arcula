@@ -21,6 +21,7 @@ import EventNode from './EventNode';
 import { useTimeline } from '@/contexts/TimelineContext';
 import TimelineControls from './TimelineControls';
 import { format } from 'date-fns';
+import { TIMELINE_LAYOUT } from '@/config/timelineLayout';
 
 // Register custom node types
 const nodeTypes: NodeTypes = {
@@ -37,19 +38,13 @@ const formatYearMonth = (date: Date): string => {
 const calculateContentBounds = (events: TimelineEvent[]) => {
   if (events.length === 0) return { centerX: 0, centerY: 0, contentWidth: 0, contentHeight: 0 };
   
-  // Current fixed positions from createNodesAndEdges
-  const UNIFORM_SPACING = 400;
-  const START_OFFSET = 200;
-  const BALLOON_Y = 150;
-  const TIMELINE_Y = 400;
-  
-  // Calculate content bounds
-  const contentWidth = (events.length - 1) * UNIFORM_SPACING + START_OFFSET * 2;
-  const contentHeight = TIMELINE_Y - BALLOON_Y + 100; // Add some padding
+  // Calculate content bounds using centralized configuration
+  const contentWidth = (events.length - 1) * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET * 2;
+  const contentHeight = TIMELINE_LAYOUT.CONTENT_HEIGHT;
   
   // Calculate center point
   const centerX = contentWidth / 2;
-  const centerY = (BALLOON_Y + TIMELINE_Y) / 2;
+  const centerY = TIMELINE_LAYOUT.CENTER_Y;
   
   return { centerX, centerY, contentWidth, contentHeight };
 };
@@ -147,7 +142,7 @@ const TimelineReference = ({
                 x1={xPos}
                 y1={timelineY}
                 x2={xPos}
-                y2={150} // balloon Y position
+                y2={TIMELINE_LAYOUT.BALLOON_Y} // balloon Y position from config
                 stroke="#6B7280"
                 strokeWidth={2 / zoom}
                 strokeOpacity={0.6}
@@ -184,11 +179,6 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
   // Sort events by date to maintain chronological order
   const sortedEvents = [...events].sort((a, b) => a.date.getTime() - b.date.getTime());
   
-  // Constants for equal spacing layout
-  const UNIFORM_SPACING = 400; // pixels between events
-  const START_OFFSET = 200; // starting offset from left
-  const BALLOON_Y = 150; // fixed Y position for all balloons (above timeline)
-  
   // Find earliest and latest dates for reference (not used for positioning)
   const minDate = new Date(sortedEvents[0].date);
   const maxDate = new Date(sortedEvents[sortedEvents.length - 1].date);
@@ -202,11 +192,11 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
   for (let i = 0; i < sortedEvents.length; i++) {
     const event = sortedEvents[i];
     
-    // Calculate x position with uniform spacing
-    const x = i * UNIFORM_SPACING + START_OFFSET;
+    // Calculate x position with uniform spacing using centralized config
+    const x = i * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET;
     
-    // All balloons at the same Y position (above timeline)
-    const y = BALLOON_Y;
+    // All balloons at the same Y position (above timeline) using centralized config
+    const y = TIMELINE_LAYOUT.BALLOON_Y;
     
     nodes.push({
       id: event.id,
@@ -216,7 +206,7 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
         event,
         minDate,
         maxDate,
-        gridScale: (sortedEvents.length - 1) * UNIFORM_SPACING + START_OFFSET * 2 // total width
+        gridScale: (sortedEvents.length - 1) * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET * 2 // total width
       },
       draggable: true,
     });
@@ -292,7 +282,7 @@ const TimelineFlowInner = () => {
       
       // Use setViewport to programmatically center the content
       setTimeout(() => {
-        reactFlowInstance.setViewport(viewport, { duration: 300 });
+        reactFlowInstance.setViewport(viewport, { duration: 0 });
       }, 100);
     }
   }, [filteredEvents, containerDimensions, reactFlowInstance]);
@@ -361,9 +351,9 @@ const TimelineFlowInner = () => {
         {/* Timeline reference with equal spacing */}
         <TimelineReference 
           events={filteredEvents}
-          uniformSpacing={400}
-          startOffset={200}
-          timelineY={400}
+          uniformSpacing={TIMELINE_LAYOUT.UNIFORM_SPACING}
+          startOffset={TIMELINE_LAYOUT.START_OFFSET}
+          timelineY={TIMELINE_LAYOUT.TIMELINE_Y}
         />
         {/* <Controls className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-none shadow-lg rounded-lg" /> */}
         <MiniMap 
