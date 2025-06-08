@@ -4,9 +4,9 @@
  */
 export const TIMELINE_LAYOUT = {
   // Y-coordinates
-  BALLOON_Y: 150,           // Event balloons position (above timeline)
-  TIMELINE_Y: 400,          // Main timeline horizontal line position
-  EXPERT_BUBBLE_OFFSET: 4,  // Margin below event balloons for expert bubbles (in Tailwind units)
+  BALLOON_Y: 0,           // Event balloons position (above timeline)
+  TIMELINE_Y: 350,          // Main timeline horizontal line position
+  EXPERT_BUBBLE_Y_OFFSET: 50,  // Distance below timeline for expert bubbles
   
   // X-coordinates and spacing
   UNIFORM_SPACING: 400,     // Horizontal spacing between events
@@ -17,8 +17,12 @@ export const TIMELINE_LAYOUT = {
     return this.TIMELINE_Y + 30;  // Date labels below timeline
   },
   
+  get EXPERT_BUBBLE_Y() {
+    return this.TIMELINE_Y + this.EXPERT_BUBBLE_Y_OFFSET;  // Expert bubbles below timeline
+  },
+  
   get CONTENT_HEIGHT() {
-    return this.TIMELINE_Y - this.BALLOON_Y + 100;  // Total content height with padding
+    return this.EXPERT_BUBBLE_Y + 150;  // Total content height including expert bubbles
   },
   
   get CENTER_Y() {

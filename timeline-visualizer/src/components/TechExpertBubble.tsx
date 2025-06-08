@@ -30,8 +30,11 @@ export default function TechExpertBubble({ reactions, eventId }: TechExpertBubbl
   return (
     <>
       <div 
-        className={`absolute top-full mt-${TIMELINE_LAYOUT.EXPERT_BUBBLE_OFFSET} left-1/2 -translate-x-1/2 z-30 cursor-pointer`}
-        style={{ pointerEvents: 'auto' }}
+        className="absolute left-1/2 -translate-x-1/2 z-30 cursor-pointer"
+        style={{ 
+          pointerEvents: 'auto',
+          top: `${TIMELINE_LAYOUT.EXPERT_BUBBLE_Y}px`
+        }}
         onClick={handleBubbleClick}
       >
         {/* Speech bubble */}
@@ -43,7 +46,7 @@ export default function TechExpertBubble({ reactions, eventId }: TechExpertBubbl
             maxWidth: '280px'
           }}
         >
-          {/* Speech bubble tail pointing up */}
+          {/* Speech bubble tail pointing up to timeline */}
           <svg 
             className="absolute -top-3 left-1/2 -translate-x-1/2" 
             width="24" 
@@ -52,7 +55,7 @@ export default function TechExpertBubble({ reactions, eventId }: TechExpertBubbl
             style={{ filter: 'drop-shadow(0 -2px 4px rgba(0,0,0,0.1))' }}
           >
             <path
-              d="M 0 12 Q 6 8, 12 0 Q 18 8, 24 12 Z"
+              d="M 0 12 Q 6 4, 12 0 Q 18 4, 24 12 Z"
               fill="rgb(17, 24, 39)"
               stroke="rgba(59, 130, 246, 0.3)"
               strokeWidth="1"
