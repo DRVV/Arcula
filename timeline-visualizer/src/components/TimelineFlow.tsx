@@ -19,6 +19,8 @@ import '@xyflow/react/dist/style.css';
 import { TimelineEvent } from '@/types/timeline';
 import EventNode from './EventNode';
 import DateLabelNode from './DateLabelNode';
+import TimelineAnchorNode from './TimelineAnchorNode';
+import { TimelineBackboneEdge, ConnectorEdge, TimelineMarkerEdge } from './TimelineEdge';
 import { useTimeline } from '@/contexts/TimelineContext';
 import TimelineControls from './TimelineControls';
 import { format } from 'date-fns';
@@ -28,6 +30,14 @@ import { TIMELINE_LAYOUT } from '@/config/timelineLayout';
 const nodeTypes: NodeTypes = {
   timelineEvent: EventNode,
   dateLabel: DateLabelNode,
+  timelineAnchor: TimelineAnchorNode,
+};
+
+// Register custom edge types
+const edgeTypes = {
+  timelineBackbone: TimelineBackboneEdge,
+  connector: ConnectorEdge,
+  timelineMarker: TimelineMarkerEdge,
 };
 
 
@@ -69,95 +79,6 @@ const calculateInitialViewport = (
   return { x, y, zoom };
 };
 
-// Timeline component that renders the horizontal timeline and date labels
-const TimelineReference = ({ 
-  events,
-  uniformSpacing,
-  startOffset,
-  timelineY
-}: { 
-  events: TimelineEvent[],
-  uniformSpacing: number,
-  startOffset: number,
-  timelineY: number
-}) => {
-  const { zoom, x, y } = useViewport();
-  
-  if (events.length === 0) return null;
-  
-  const timelineWidth = (events.length - 1) * uniformSpacing + startOffset * 2;
-  
-  return (
-    <div 
-      className="react-flow__timeline-reference" 
-      style={{ 
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-        transform: `translate(${x}px, ${y}px) scale(${zoom})`,
-        transformOrigin: '0 0',
-      }}
-    >
-      <svg 
-        width={timelineWidth} 
-        height={600}
-        className="react-flow__timeline"
-        style={{ 
-          position: 'absolute', 
-          top: 0,
-          left: 0,
-          overflow: 'visible'
-        }}
-      >
-        {/* Main horizontal timeline */}
-        <line 
-          x1={startOffset} 
-          y1={timelineY} 
-          x2={timelineWidth - startOffset} 
-          y2={timelineY}
-          stroke="#6B7280" 
-          strokeWidth={3 / zoom} 
-          strokeOpacity={0.8}
-        />
-        
-        {/* Event markers */}
-        {events.map((event, i) => {
-          const xPos = i * uniformSpacing + startOffset;
-          
-          return (
-            <g key={`timeline-${event.id}`}>
-              {/* Event marker on timeline */}
-              <circle
-                cx={xPos}
-                cy={timelineY}
-                r={6 / zoom}
-                fill="#3B82F6"
-                stroke="#1E40AF"
-                strokeWidth={2 / zoom}
-              />
-              
-              {/* Vertical connector line from timeline to balloon */}
-              <line
-                x1={xPos}
-                y1={timelineY}
-                x2={xPos}
-                y2={TIMELINE_LAYOUT.BALLOON_Y} // balloon Y position from config
-                stroke="#6B7280"
-                strokeWidth={2 / zoom}
-                strokeOpacity={0.6}
-                strokeDasharray={`${5 / zoom} ${3 / zoom}`}
-              />
-              
-            </g>
-          );
-        })}
-      </svg>
-    </div>
-  );
-};
 
 // Function to create nodes and edges from timeline events with equal spacing
 const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: Edge[]; minDate: Date; maxDate: Date } => {
@@ -178,22 +99,67 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
 
   // Position timeline event nodes with equal spacing
   const nodes: Node[] = [];
+  const edges: Edge[] = [];
+  
+  // Create timeline anchor nodes for the backbone
+  const timelineStartX = TIMELINE_LAYOUT.START_OFFSET;
+  const timelineEndX = (sortedEvents.length - 1) * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET;
+  const timelineY = TIMELINE_LAYOUT.TIMELINE_Y;
+  
+  // Start anchor node
+  nodes.push({
+    id: 'timeline-start',
+    type: 'timelineAnchor',
+    position: { x: timelineStartX, y: timelineY },
+    data: { isStart: true },
+    draggable: false,
+    selectable: false,
+    focusable: false,
+  });
+  
+  // End anchor node
+  nodes.push({
+    id: 'timeline-end',
+    type: 'timelineAnchor',
+    position: { x: timelineEndX, y: timelineY },
+    data: { isEnd: true },
+    draggable: false,
+    selectable: false,
+    focusable: false,
+  });
+  
+  // Timeline backbone edge
+  edges.push({
+    id: 'timeline-backbone',
+    source: 'timeline-start',
+    target: 'timeline-end',
+    type: 'timelineBackbone',
+    sourceHandle: 'right',
+    targetHandle: 'left',
+    style: {
+      stroke: '#6B7280',
+      strokeWidth: 3,
+      strokeOpacity: 0.8,
+    },
+    selectable: false,
+    focusable: false,
+  });
   
   for (let i = 0; i < sortedEvents.length; i++) {
     const event = sortedEvents[i];
     
     // Calculate x position with uniform spacing using centralized config
     // Offset by half the balloon width so the center of the balloon aligns with the timeline dot
-    const x = i * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET - (TIMELINE_LAYOUT.NODE_POSITIONING.BALLOON_WIDTH / 2);
+    const eventX = i * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET - (TIMELINE_LAYOUT.NODE_POSITIONING.BALLOON_WIDTH / 2);
     
     // All balloons at the same Y position (above timeline) using centralized config
-    const y = TIMELINE_LAYOUT.BALLOON_Y;
+    const eventY = TIMELINE_LAYOUT.BALLOON_Y;
     
     // Create event node
     nodes.push({
       id: event.id,
       type: 'timelineEvent',
-      position: { x, y },
+      position: { x: eventX, y: eventY },
       data: { 
         event,
         minDate,
@@ -203,8 +169,55 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
       draggable: true,
     });
     
+    // Create timeline anchor node for this event (for marker and connector)
+    const anchorX = i * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET;
+    const anchorId = `timeline-anchor-${event.id}`;
+    
+    nodes.push({
+      id: anchorId,
+      type: 'timelineAnchor',
+      position: { x: anchorX, y: timelineY },
+      data: { eventId: event.id },
+      draggable: false,
+      selectable: false,
+      focusable: false,
+    });
+    
+    // Create connector edge from timeline anchor to event balloon
+    edges.push({
+      id: `connector-${event.id}`,
+      source: anchorId,
+      target: event.id,
+      type: 'connector',
+      sourceHandle: 'top',
+      targetHandle: 'bottom',
+      style: {
+        stroke: '#6B7280',
+        strokeWidth: 2,
+        strokeOpacity: 0.6,
+        strokeDasharray: '5 3',
+      },
+      selectable: false,
+      focusable: false,
+    });
+    
+    // Create timeline marker edge (circle) at the anchor position
+    edges.push({
+      id: `marker-${event.id}`,
+      source: anchorId,
+      target: anchorId,
+      type: 'timelineMarker',
+      style: {
+        fill: '#3B82F6',
+        stroke: '#1E40AF',
+        strokeWidth: 2,
+      },
+      selectable: false,
+      focusable: false,
+    });
+    
     // Create corresponding date label node
-    const dateLabelX = i * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET;
+    const dateLabelX = anchorX;
     const dateLabelY = TIMELINE_LAYOUT.TIMELINE_Y + TIMELINE_LAYOUT.TYPOGRAPHY.DATE_LABEL_OFFSET;
     
     nodes.push({
@@ -224,11 +237,7 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
     });
   }
 
-  // Log the created nodes to debug
-  console.log(`Created ${nodes.length} nodes with equal spacing`);
-  
-  // Create edges connecting events chronologically
-  const edges: Edge[] = [];
+  // Create chronological edges connecting events
   for (let i = 0; i < sortedEvents.length - 1; i++) {
     edges.push({
       id: `e${sortedEvents[i].id}-${sortedEvents[i + 1].id}`,
@@ -243,6 +252,9 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
       animated: true,
     });
   }
+
+  // Log the created nodes to debug
+  console.log(`Created ${nodes.length} nodes and ${edges.length} edges with ReactFlow timeline`);
   
   return { nodes, edges, minDate, maxDate };
 };
@@ -346,7 +358,9 @@ const TimelineFlowInner = () => {
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
         minZoom={0.1}
         maxZoom={2}
         defaultViewport={initialViewport}
@@ -359,14 +373,6 @@ const TimelineFlowInner = () => {
         edgesFocusable={false}
         panOnDrag={true}
       >
-        
-        {/* Timeline reference with equal spacing */}
-        <TimelineReference 
-          events={filteredEvents}
-          uniformSpacing={TIMELINE_LAYOUT.UNIFORM_SPACING}
-          startOffset={TIMELINE_LAYOUT.START_OFFSET}
-          timelineY={TIMELINE_LAYOUT.TIMELINE_Y}
-        />
         {/* <Controls className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-none shadow-lg rounded-lg" /> */}
         <MiniMap 
           className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-none shadow-lg rounded-lg"
