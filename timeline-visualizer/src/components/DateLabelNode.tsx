@@ -12,7 +12,7 @@ export default function DateLabelNode({ data }: DateLabelNodeProps) {
   return (
     <div className="date-label-node pointer-events-none select-none">
       <div className="text-center">
-        <span className="text-sm font-semibold text-gray-300 whitespace-nowrap">
+        <span className="text-4xl font-semibold text-gray-300 whitespace-nowrap">
           {data.label}
         </span>
       </div>

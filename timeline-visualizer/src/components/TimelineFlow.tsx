@@ -365,6 +365,24 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
         selectable: false,
         focusable: false,
       });
+      
+      // Create date label for quantum events
+      const quantumDateLabelY = quantumTimelineY + TIMELINE_LAYOUT.TYPOGRAPHY.DATE_LABEL_OFFSET;
+      nodes.push({
+        id: `date-${event.id}`,
+        type: 'dateLabel',
+        position: { 
+          x: anchorX - 50,
+          y: quantumDateLabelY 
+        },
+        data: {
+          date: event.date,
+          label: format(event.date, 'MMM yyyy')
+        },
+        draggable: false,
+        selectable: false,
+        focusable: false,
+      });
     }
   }
   
@@ -481,6 +499,24 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
           stroke: SCENARIO_COLORS['satellite-mesh'],
           strokeWidth: 2,
         },
+        selectable: false,
+        focusable: false,
+      });
+      
+      // Create date label for satellite events
+      const satelliteDateLabelY = satelliteTimelineY + TIMELINE_LAYOUT.TYPOGRAPHY.DATE_LABEL_OFFSET;
+      nodes.push({
+        id: `date-${event.id}`,
+        type: 'dateLabel',
+        position: { 
+          x: anchorX - 50,
+          y: satelliteDateLabelY 
+        },
+        data: {
+          date: event.date,
+          label: format(event.date, 'MMM yyyy')
+        },
+        draggable: false,
         selectable: false,
         focusable: false,
       });

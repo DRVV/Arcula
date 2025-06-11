@@ -150,10 +150,10 @@ const ChatWindow = ({ hasStartedChat, onFirstMessage }: ChatWindowProps) => {
               className="text-center mb-8 max-w-2xl"
             >
               <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-4">
-                Welcome to Timeline Explorer
+                The Future Unfold.
               </h1>
               <p className="text-xl text-gray-300 leading-relaxed">
-                Ask me anything about technology history and I'll provide insights while building an interactive timeline visualization for you.
+                マルチエージェントと紐解く未来の技術史
               </p>
             </motion.div>
 
