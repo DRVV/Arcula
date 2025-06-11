@@ -113,8 +113,8 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
   
   // Layout constants
   const timelineY = TIMELINE_LAYOUT.TIMELINE_Y;
-  const quantumTimelineY = timelineY - 200; // Quantum scenario above main timeline
-  const satelliteTimelineY = timelineY + 200; // Satellite scenario below main timeline
+  const quantumTimelineY = timelineY + TIMELINE_LAYOUT.SCENARIO_POSITIONING.QUANTUM_TIMELINE_OFFSET; // Quantum scenario above main timeline
+  const satelliteTimelineY = timelineY + TIMELINE_LAYOUT.SCENARIO_POSITIONING.SATELLITE_TIMELINE_OFFSET; // Satellite scenario below main timeline
   
   // Create main timeline backbone
   const timelineStartX = TIMELINE_LAYOUT.START_OFFSET;
@@ -303,7 +303,7 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
     for (let i = 0; i < quantumEvents.length; i++) {
       const event = quantumEvents[i];
       const eventX = quantumStartX + i * TIMELINE_LAYOUT.UNIFORM_SPACING - (TIMELINE_LAYOUT.NODE_POSITIONING.BALLOON_WIDTH / 2);
-      const eventY = quantumTimelineY - 150; // Above quantum timeline
+      const eventY = quantumTimelineY - TIMELINE_LAYOUT.SCENARIO_POSITIONING.EVENT_BALLOON_OFFSET; // Above quantum timeline
       const anchorX = quantumStartX + i * TIMELINE_LAYOUT.UNIFORM_SPACING;
       const anchorId = `quantum-anchor-${event.id}`;
       
@@ -440,7 +440,7 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
     for (let i = 0; i < satelliteEvents.length; i++) {
       const event = satelliteEvents[i];
       const eventX = satelliteStartX + i * TIMELINE_LAYOUT.UNIFORM_SPACING - (TIMELINE_LAYOUT.NODE_POSITIONING.BALLOON_WIDTH / 2);
-      const eventY = satelliteTimelineY + 150; // Below satellite timeline
+      const eventY = satelliteTimelineY - TIMELINE_LAYOUT.SCENARIO_POSITIONING.EVENT_BALLOON_OFFSET; // Above satellite timeline (FIXED)
       const anchorX = satelliteStartX + i * TIMELINE_LAYOUT.UNIFORM_SPACING;
       const anchorId = `satellite-anchor-${event.id}`;
       

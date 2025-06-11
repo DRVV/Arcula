@@ -22,9 +22,16 @@ export const TIMELINE_LAYOUT = {
   // Node positioning settings
   NODE_POSITIONING: {
     BALLOON_HEIGHT_ESTIMATE: 180,  // Estimated height of event balloons for centering
-    BALLOON_OFFSET_FROM_TIMELINE: 350, // Distance above timeline for balloon positioning
-    BALLOON_WIDTH: 220,            // Default width of event balloons
+    BALLOON_OFFSET_FROM_TIMELINE: 270, // Distance above timeline for balloon positioning
+    BALLOON_WIDTH: 250,            // Default width of event balloons
     BALLOON_WIDTH_EXPANDED: 300,   // Width when expanded
+  },
+  
+  // Scenario positioning settings
+  SCENARIO_POSITIONING: {
+    QUANTUM_TIMELINE_OFFSET: -300,    // Above main timeline
+    SATELLITE_TIMELINE_OFFSET: 300,   // Below main timeline
+    EVENT_BALLOON_OFFSET: 250,       // Distance above each timeline for event balloons
   },
   
   // Event node height configurations
