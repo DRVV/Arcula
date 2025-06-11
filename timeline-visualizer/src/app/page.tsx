@@ -7,11 +7,16 @@ import ChatWindow from '@/components/ChatWindow';
 
 const HomePageContent = () => {
   const [filterOpen, setFilterOpen] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(false);
   const [hasStartedChat, setHasStartedChat] = useState(false);
   
   const toggleFilter = useCallback(() => {
     setFilterOpen(!filterOpen);
   }, [filterOpen]);
+
+  const toggleControls = useCallback(() => {
+    setControlsVisible(!controlsVisible);
+  }, [controlsVisible]);
 
   const handleFirstMessage = useCallback(() => {
     setHasStartedChat(true);
@@ -19,7 +24,12 @@ const HomePageContent = () => {
   
   return (
     <div className="bg-gray-950 text-white h-screen w-screen overflow-hidden flex flex-col">
-      <Header filterOpen={filterOpen} toggleFilter={toggleFilter} />
+      <Header 
+        filterOpen={filterOpen} 
+        toggleFilter={toggleFilter}
+        controlsVisible={controlsVisible}
+        toggleControls={toggleControls}
+      />
       
       {/* Add padding-top to account for the fixed header */}
       <main className="w-full h-full pt-14 relative">
@@ -34,7 +44,7 @@ const HomePageContent = () => {
           <div className="h-full relative">
             {/* Timeline visualization - full screen background */}
             <div className="w-full h-full">
-              <DynamicTimelineFlow />
+              <DynamicTimelineFlow controlsVisible={controlsVisible} />
             </div>
             
             {/* Chat window - compact bottom panel */}

@@ -8,6 +8,10 @@ const TimelineFlow = dynamic(() => import('@/components/TimelineFlow'), {
   ssr: false
 });
 
-export default function DynamicTimelineFlow() {
-  return <TimelineFlow />;
+interface DynamicTimelineFlowProps {
+  controlsVisible: boolean;
+}
+
+export default function DynamicTimelineFlow({ controlsVisible }: DynamicTimelineFlowProps) {
+  return <TimelineFlow controlsVisible={controlsVisible} />;
 }

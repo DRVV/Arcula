@@ -492,8 +492,12 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
   return { nodes, edges, minDate, maxDate };
 };
 
+interface TimelineFlowProps {
+  controlsVisible: boolean;
+}
+
 // The main timeline visualization component
-const TimelineFlowInner = () => {
+const TimelineFlowInner = ({ controlsVisible }: TimelineFlowProps) => {
   const reactFlowInstance = useReactFlow();
   const { zoom: currentZoom } = useViewport();
   const { filteredEvents } = useTimeline();
@@ -599,19 +603,21 @@ const TimelineFlowInner = () => {
           zoomable
           pannable
         />
-        <Panel position="top-right">
-          <TimelineControls />
-        </Panel>
+        {controlsVisible && (
+          <Panel position="top-right">
+            <TimelineControls />
+          </Panel>
+        )}
       </ReactFlow>
     </div>
   );
 };
 
 // Wrap with provider to use React Flow hooks
-export default function TimelineFlow() {
+export default function TimelineFlow({ controlsVisible }: TimelineFlowProps) {
   return (
     <ReactFlowProvider>
-      <TimelineFlowInner />
+      <TimelineFlowInner controlsVisible={controlsVisible} />
     </ReactFlowProvider>
   );
 }
