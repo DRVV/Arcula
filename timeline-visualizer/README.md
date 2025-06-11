@@ -78,3 +78,18 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+## Accessing Dify
+
+- 過去イベ
+   - Chat_Flow: prd-Orchestrator-Past-v0
+   - API_Key: app-LIHHLGwqhx0LeFQjPml4U4xr
+
+- 将来シナリオ
+   - Chat_Flow: prd-Orchestrator-Future-v0
+   - API_Key: app-KUjNs8hGwCjx1Z9lxQ1wMbU1
+
+- 評価・要素技術
+   - Chat_Flow: prd-Orchestrator-Evaluate-v0
+   - API_Key: app-AXd8ves5mm3SiN4O9QIastoZ

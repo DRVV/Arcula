@@ -16,6 +16,21 @@ export interface TimelineEvent {
   }[];
   position?: { x: number, y: number }; // For custom positioning
   reactions?: ReactionData[]; // Embedded stakeholder reactions
+  // Scenario branching properties
+  scenarioId?: string; // identifies which scenario branch this event belongs to
+  parentEventId?: string; // for branching from a specific point
+  branchPoint?: boolean; // marks events where scenarios can diverge
+}
+
+export interface Scenario {
+  id: string;
+  name: string;
+  description: string;
+  color: string; // Visual distinction color
+  probability?: number; // Optional probability weighting (0-100)
+  startDate: Date; // When this scenario branches from main timeline
+  parentScenarioId?: string; // For nested scenarios
+  isActive?: boolean; // Whether this scenario is currently visible
 }
 
 export interface TimelineNode {

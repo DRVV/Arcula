@@ -1,4 +1,4 @@
-import { TimelineEvent, Stakeholder } from '@/types/timeline';
+import { TimelineEvent, Stakeholder, Scenario } from '@/types/timeline';
 
 // Define common stakeholders
 export const stakeholders: Record<string, Stakeholder> = {
@@ -495,5 +495,244 @@ export const timelineEvents: TimelineEvent[] = [
         timestamp: new Date('2020-10-16')
       }
     ]
+  },
+
+  // Branch Point - Telecommunications Crossroads
+  {
+    id: '18',
+    date: new Date('2026-01-01'),
+    title: 'Telecommunications Crossroads',
+    description: '2026年、通信技術は重要な分岐点に到達。量子通信と衛星メッシュネットワークという2つの革新的な道筋が見えてきた。',
+    category: ['network', 'future', 'crossroads'],
+    importance: 5,
+    branchPoint: true,
+    reactions: [
+      {
+        stakeholder: stakeholders.techExperts,
+        emotion: 'excited',
+        emoticon: '🔮',
+        shortReaction: '技術の分岐点到来',
+        shortDescription: '通信技術の未来が2つの道に分かれる...',
+        detailedReaction: '量子通信と衛星メッシュ、どちらも革命的だが全く異なるアプローチ。業界は重要な選択を迫られている。',
+        timestamp: new Date('2026-01-01')
+      }
+    ]
   }
+];
+
+// Define future scenarios
+export const scenarios: Scenario[] = [
+  {
+    id: 'quantum-era',
+    name: 'Quantum Communication Era',
+    description: '量子通信技術が主流となり、絶対的なセキュリティと瞬間的な情報伝達を実現する未来',
+    color: '#8B5CF6', // Purple theme
+    probability: 45,
+    startDate: new Date('2026-01-01'),
+    isActive: true
+  },
+  {
+    id: 'satellite-mesh',
+    name: 'Satellite Mesh Dominance',
+    description: '低軌道衛星ネットワークが地上インフラを置き換え、宇宙ベースの通信が標準となる未来',
+    color: '#06B6D4', // Cyan theme
+    probability: 55,
+    startDate: new Date('2026-01-01'),
+    isActive: true
+  }
+];
+
+// Future timeline events for Quantum Communication Era scenario
+export const quantumScenarioEvents: TimelineEvent[] = [
+  {
+    id: 'q1',
+    date: new Date('2027-03-15'),
+    title: '商用量子鍵配送ネットワーク開始',
+    description: '世界初の商用量子鍵配送（QKD）ネットワークが主要都市間で運用開始。銀行や政府機関が絶対的なセキュリティを実現。',
+    category: ['quantum', 'security', 'network'],
+    importance: 4,
+    scenarioId: 'quantum-era',
+    parentEventId: '18',
+    reactions: [
+      {
+        stakeholder: stakeholders.government,
+        emotion: 'excited',
+        emoticon: '🔐',
+        shortReaction: '国家機密が完全保護',
+        shortDescription: '量子暗号で情報セキュリティが革命化...',
+        detailedReaction: '量子もつれを利用した通信は理論的に盗聴不可能。国家安全保障レベルの情報保護が実現した。',
+        timestamp: new Date('2027-03-15')
+      },
+      {
+        stakeholder: stakeholders.techExperts,
+        emotion: 'excited',
+        emoticon: '⚛️',
+        shortReaction: '量子物理学の実用化',
+        shortDescription: '量子もつれ技術が商用レベルに到達...',
+        detailedReaction: '量子もつれ状態の安定化、量子中継器、エラー訂正技術の統合により、長距離量子通信が実現。',
+        timestamp: new Date('2027-03-16')
+      }
+    ]
+  },
+  {
+    id: 'q2',
+    date: new Date('2029-06-20'),
+    title: '量子インターネットプロトタイプ',
+    description: '東京-大阪-名古屋を結ぶ量子インターネットプロトタイプが稼働開始。量子もつれによる瞬間的な情報共有を実証。',
+    category: ['quantum', 'internet', 'prototype'],
+    importance: 5,
+    scenarioId: 'quantum-era',
+    reactions: [
+      {
+        stakeholder: stakeholders.citizens,
+        emotion: 'surprised',
+        emoticon: '🌐',
+        shortReaction: '瞬間通信が現実に！',
+        shortDescription: '距離に関係なく瞬間的な通信が可能...',
+        detailedReaction: '量子もつれで東京と大阪が瞬時につながるなんて、まるでテレポーテーションみたい！',
+        timestamp: new Date('2029-06-20')
+      }
+    ]
+  },
+  {
+    id: 'q3',
+    date: new Date('2032-09-10'),
+    title: '量子セキュア6Gネットワーク',
+    description: '6G通信規格に量子暗号が標準搭載。すべてのモバイル通信が量子レベルのセキュリティを実現。',
+    category: ['quantum', '6g', 'mobile'],
+    importance: 5,
+    scenarioId: 'quantum-era',
+    reactions: [
+      {
+        stakeholder: stakeholders.citizens,
+        emotion: 'positive',
+        emoticon: '📱',
+        shortReaction: 'スマホが量子セキュア',
+        shortDescription: '日常の通信が量子レベルで保護される...',
+        detailedReaction: 'メッセージも通話も完全に安全。プライバシーの心配が一切なくなった。',
+        timestamp: new Date('2032-09-10')
+      }
+    ]
+  },
+  {
+    id: 'q4',
+    date: new Date('2035-12-01'),
+    title: 'グローバル量子通信インフラ完成',
+    description: '世界規模の量子通信インフラが完成。大陸間量子もつれネットワークにより、地球規模の瞬間通信が実現。',
+    category: ['quantum', 'global', 'infrastructure'],
+    importance: 5,
+    scenarioId: 'quantum-era',
+    reactions: [
+      {
+        stakeholder: stakeholders.techExperts,
+        emotion: 'excited',
+        emoticon: '🌍',
+        shortReaction: '地球規模量子ネットワーク',
+        shortDescription: '惑星レベルの量子通信網が完成...',
+        detailedReaction: '海底量子ケーブル、衛星量子中継器、大陸間量子もつれ。人類の通信能力が新次元に到達した。',
+        timestamp: new Date('2035-12-01')
+      }
+    ]
+  }
+];
+
+// Future timeline events for Satellite Mesh Dominance scenario
+export const satelliteScenarioEvents: TimelineEvent[] = [
+  {
+    id: 's1',
+    date: new Date('2027-05-22'),
+    title: 'LEO衛星インターネット全球カバレッジ',
+    description: '低軌道衛星コンステレーションが地球全域をカバー。極地や海洋を含む全ての地域で高速インターネットが利用可能に。',
+    category: ['satellite', 'global', 'internet'],
+    importance: 4,
+    scenarioId: 'satellite-mesh',
+    parentEventId: '18',
+    reactions: [
+      {
+        stakeholder: stakeholders.citizens,
+        emotion: 'excited',
+        emoticon: '🛰️',
+        shortReaction: 'どこでもネット接続！',
+        shortDescription: '地球上のあらゆる場所でインターネット利用可能...',
+        detailedReaction: '山奥でも海上でも高速ネットが使える。デジタルデバイドが完全に解消された！',
+        timestamp: new Date('2027-05-22')
+      },
+      {
+        stakeholder: stakeholders.techExperts,
+        emotion: 'positive',
+        emoticon: '🚀',
+        shortReaction: 'メガコンステレーション実現',
+        shortDescription: '数万機の衛星による通信網が完成...',
+        detailedReaction: 'Ka/Ku帯域、レーザー衛星間通信、自動軌道制御。宇宙ベースインフラの新時代が到来。',
+        timestamp: new Date('2027-05-23')
+      }
+    ]
+  },
+  {
+    id: 's2',
+    date: new Date('2029-08-14'),
+    title: '衛星直接スマホ通信標準化',
+    description: 'スマートフォンから衛星への直接通信が標準機能に。地上基地局を経由せずに衛星経由で通話・データ通信が可能。',
+    category: ['satellite', 'smartphone', 'direct'],
+    importance: 5,
+    scenarioId: 'satellite-mesh',
+    reactions: [
+      {
+        stakeholder: stakeholders.citizens,
+        emotion: 'surprised',
+        emoticon: '📞',
+        shortReaction: 'スマホが宇宙と直結',
+        shortDescription: '携帯電話が直接衛星と通信する時代...',
+        detailedReaction: '圏外という概念がなくなった。どんな僻地でも宇宙経由で通話できるなんて未来的！',
+        timestamp: new Date('2029-08-14')
+      }
+    ]
+  },
+  {
+    id: 's3',
+    date: new Date('2031-11-30'),
+    title: '地上基地局の段階的廃止開始',
+    description: '農村部の携帯基地局が段階的に廃止開始。衛星通信の信頼性とコスト効率が地上インフラを上回る。',
+    category: ['satellite', 'infrastructure', 'transition'],
+    importance: 4,
+    scenarioId: 'satellite-mesh',
+    reactions: [
+      {
+        stakeholder: stakeholders.investors,
+        emotion: 'positive',
+        emoticon: '💰',
+        shortReaction: 'インフラコスト大幅削減',
+        shortDescription: '地上設備維持費が不要になる革命...',
+        detailedReaction: '基地局建設・保守費用が不要になり、通信事業の収益性が劇的に改善。',
+        timestamp: new Date('2031-11-30')
+      }
+    ]
+  },
+  {
+    id: 's4',
+    date: new Date('2034-04-18'),
+    title: '宇宙データセンター運用開始',
+    description: '軌道上データセンターが運用開始。エッジコンピューティングが宇宙で実行され、地球上のどこからでも超低遅延アクセスが可能。',
+    category: ['satellite', 'datacenter', 'edge'],
+    importance: 5,
+    scenarioId: 'satellite-mesh',
+    reactions: [
+      {
+        stakeholder: stakeholders.techExperts,
+        emotion: 'excited',
+        emoticon: '🛸',
+        shortReaction: '宇宙コンピューティング時代',
+        shortDescription: '軌道上でのデータ処理が現実に...',
+        detailedReaction: '太陽光発電、真空冷却、微小重力環境を活用した宇宙データセンター。地球の電力・冷却コストから解放された。',
+        timestamp: new Date('2034-04-18')
+      }
+    ]
+  }
+];
+
+// Combine all timeline events
+export const allTimelineEvents: TimelineEvent[] = [
+  ...timelineEvents,
+  ...quantumScenarioEvents,
+  ...satelliteScenarioEvents
 ];

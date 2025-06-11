@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { FilterState, TimelineEvent } from '@/types/timeline';
-import { timelineEvents as initialTimelineEvents } from '@/data/timelineEvents';
+import { allTimelineEvents as initialTimelineEvents } from '@/data/timelineEvents';
 import { useChatMessages } from './ChatContext';
 
 // Extract all unique categories from timeline events

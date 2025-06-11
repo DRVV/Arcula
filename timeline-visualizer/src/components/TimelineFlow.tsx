@@ -20,7 +20,7 @@ import { TimelineEvent } from '@/types/timeline';
 import EventNode from './EventNode';
 import DateLabelNode from './DateLabelNode';
 import TimelineAnchorNode from './TimelineAnchorNode';
-import { TimelineBackboneEdge, ConnectorEdge, TimelineMarkerEdge } from './TimelineEdge';
+import { TimelineBackboneEdge, ConnectorEdge, TimelineMarkerEdge, ScenarioBranchEdge, ScenarioBackboneEdge, BranchPointMarkerEdge } from './TimelineEdge';
 import { useTimeline } from '@/contexts/TimelineContext';
 import TimelineControls from './TimelineControls';
 import { format } from 'date-fns';
@@ -38,8 +38,16 @@ const edgeTypes = {
   timelineBackbone: TimelineBackboneEdge,
   connector: ConnectorEdge,
   timelineMarker: TimelineMarkerEdge,
+  scenarioBranch: ScenarioBranchEdge,
+  scenarioBackbone: ScenarioBackboneEdge,
+  branchPointMarker: BranchPointMarkerEdge,
 };
 
+// Scenario colors
+const SCENARIO_COLORS = {
+  'quantum-era': '#8B5CF6',
+  'satellite-mesh': '#06B6D4',
+};
 
 // Helper function to format a date as YYYY-MM
 const formatYearMonth = (date: Date): string => {
@@ -79,8 +87,7 @@ const calculateInitialViewport = (
   return { x, y, zoom };
 };
 
-
-// Function to create nodes and edges from timeline events with equal spacing
+// Function to create nodes and edges from timeline events with branching scenarios
 const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: Edge[]; minDate: Date; maxDate: Date } => {
   // Handle empty events array
   if (events.length === 0) {
@@ -90,23 +97,30 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
   // Sort events by date to maintain chronological order
   const sortedEvents = [...events].sort((a, b) => a.date.getTime() - b.date.getTime());
   
-  // Find earliest and latest dates for reference (not used for positioning)
+  // Find earliest and latest dates for reference
   const minDate = new Date(sortedEvents[0].date);
   const maxDate = new Date(sortedEvents[sortedEvents.length - 1].date);
   
-  // Log the events to make sure they're being filtered correctly
-  console.log(`Processing ${sortedEvents.length} events with equal spacing layout`);
+  // Separate events by scenario
+  const mainTimelineEvents = sortedEvents.filter(event => !event.scenarioId);
+  const quantumEvents = sortedEvents.filter(event => event.scenarioId === 'quantum-era');
+  const satelliteEvents = sortedEvents.filter(event => event.scenarioId === 'satellite-mesh');
+  
+  console.log(`Processing events: ${mainTimelineEvents.length} main, ${quantumEvents.length} quantum, ${satelliteEvents.length} satellite`);
 
-  // Position timeline event nodes with equal spacing
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   
-  // Create timeline anchor nodes for the backbone
-  const timelineStartX = TIMELINE_LAYOUT.START_OFFSET;
-  const timelineEndX = (sortedEvents.length - 1) * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET;
+  // Layout constants
   const timelineY = TIMELINE_LAYOUT.TIMELINE_Y;
+  const quantumTimelineY = timelineY - 200; // Quantum scenario above main timeline
+  const satelliteTimelineY = timelineY + 200; // Satellite scenario below main timeline
   
-  // Start anchor node
+  // Create main timeline backbone
+  const timelineStartX = TIMELINE_LAYOUT.START_OFFSET;
+  const timelineEndX = (mainTimelineEvents.length - 1) * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET;
+  
+  // Main timeline anchor nodes
   nodes.push({
     id: 'timeline-start',
     type: 'timelineAnchor',
@@ -117,7 +131,6 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
     focusable: false,
   });
   
-  // End anchor node
   nodes.push({
     id: 'timeline-end',
     type: 'timelineAnchor',
@@ -128,7 +141,7 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
     focusable: false,
   });
   
-  // Timeline backbone edge
+  // Main timeline backbone edge
   edges.push({
     id: 'timeline-backbone',
     source: 'timeline-start',
@@ -145,15 +158,13 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
     focusable: false,
   });
   
-  for (let i = 0; i < sortedEvents.length; i++) {
-    const event = sortedEvents[i];
-    
-    // Calculate x position with uniform spacing using centralized config
-    // Offset by half the balloon width so the center of the balloon aligns with the timeline dot
+  // Process main timeline events
+  for (let i = 0; i < mainTimelineEvents.length; i++) {
+    const event = mainTimelineEvents[i];
     const eventX = i * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET - (TIMELINE_LAYOUT.NODE_POSITIONING.BALLOON_WIDTH / 2);
-    
-    // All balloons at the same Y position (above timeline) using centralized config
     const eventY = TIMELINE_LAYOUT.BALLOON_Y;
+    const anchorX = i * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET;
+    const anchorId = `timeline-anchor-${event.id}`;
     
     // Create event node
     nodes.push({
@@ -164,15 +175,12 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
         event,
         minDate,
         maxDate,
-        gridScale: (sortedEvents.length - 1) * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET * 2 // total width
+        gridScale: (mainTimelineEvents.length - 1) * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET * 2
       },
       draggable: true,
     });
     
-    // Create timeline anchor node for this event (for marker and connector)
-    const anchorX = i * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET;
-    const anchorId = `timeline-anchor-${event.id}`;
-    
+    // Create timeline anchor
     nodes.push({
       id: anchorId,
       type: 'timelineAnchor',
@@ -183,7 +191,7 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
       focusable: false,
     });
     
-    // Create connector edge from timeline anchor to event balloon
+    // Create connector edge
     edges.push({
       id: `connector-${event.id}`,
       source: anchorId,
@@ -201,30 +209,29 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
       focusable: false,
     });
     
-    // Create timeline marker edge (circle) at the anchor position
+    // Create marker - use branch point marker for branch events
+    const markerType = event.branchPoint ? 'branchPointMarker' : 'timelineMarker';
     edges.push({
       id: `marker-${event.id}`,
       source: anchorId,
       target: anchorId,
-      type: 'timelineMarker',
+      type: markerType,
       style: {
-        fill: '#3B82F6',
-        stroke: '#1E40AF',
+        fill: event.branchPoint ? '#F59E0B' : '#3B82F6',
+        stroke: event.branchPoint ? '#D97706' : '#1E40AF',
         strokeWidth: 2,
       },
       selectable: false,
       focusable: false,
     });
     
-    // Create corresponding date label node
-    const dateLabelX = anchorX;
-    const dateLabelY = TIMELINE_LAYOUT.TIMELINE_Y + TIMELINE_LAYOUT.TYPOGRAPHY.DATE_LABEL_OFFSET;
-    
+    // Create date label
+    const dateLabelY = timelineY + TIMELINE_LAYOUT.TYPOGRAPHY.DATE_LABEL_OFFSET;
     nodes.push({
       id: `date-${event.id}`,
       type: 'dateLabel',
       position: { 
-        x: dateLabelX - 50, // Center the label (approximate width compensation)
+        x: anchorX - 50,
         y: dateLabelY 
       },
       data: {
@@ -236,31 +243,252 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
       focusable: false,
     });
   }
-
-  // Create chronological edges connecting events
-  for (let i = 0; i < sortedEvents.length - 1; i++) {
-    edges.push({
-      id: `e${sortedEvents[i].id}-${sortedEvents[i + 1].id}`,
-      source: sortedEvents[i].id,
-      target: sortedEvents[i + 1].id,
-      style: { 
-        stroke: '#4B5563', 
-        strokeWidth: 2, 
-        opacity: 0.7 
-      },
-      type: 'smoothstep',
-      animated: true,
+  
+  // Find branch point for scenario connections
+  const branchPoint = mainTimelineEvents.find(event => event.branchPoint);
+  const branchPointIndex = branchPoint ? mainTimelineEvents.indexOf(branchPoint) : -1;
+  const branchPointX = branchPointIndex >= 0 ? branchPointIndex * TIMELINE_LAYOUT.UNIFORM_SPACING + TIMELINE_LAYOUT.START_OFFSET : 0;
+  
+  // Process Quantum scenario events
+  if (quantumEvents.length > 0) {
+    const quantumStartX = branchPointX + TIMELINE_LAYOUT.UNIFORM_SPACING;
+    const quantumEndX = quantumStartX + (quantumEvents.length - 1) * TIMELINE_LAYOUT.UNIFORM_SPACING;
+    
+    // Quantum timeline anchors
+    nodes.push({
+      id: 'quantum-start',
+      type: 'timelineAnchor',
+      position: { x: quantumStartX, y: quantumTimelineY },
+      data: { isStart: true, scenarioId: 'quantum-era' },
+      draggable: false,
+      selectable: false,
+      focusable: false,
     });
+    
+    nodes.push({
+      id: 'quantum-end',
+      type: 'timelineAnchor',
+      position: { x: quantumEndX, y: quantumTimelineY },
+      data: { isEnd: true, scenarioId: 'quantum-era' },
+      draggable: false,
+      selectable: false,
+      focusable: false,
+    });
+    
+    // Quantum scenario backbone
+    edges.push({
+      id: 'quantum-backbone',
+      source: 'quantum-start',
+      target: 'quantum-end',
+      type: 'scenarioBackbone',
+      data: { scenarioColor: SCENARIO_COLORS['quantum-era'] },
+      selectable: false,
+      focusable: false,
+    });
+    
+    // Branch connection from main timeline to quantum scenario
+    if (branchPoint) {
+      edges.push({
+        id: 'branch-to-quantum',
+        source: `timeline-anchor-${branchPoint.id}`,
+        target: 'quantum-start',
+        type: 'scenarioBranch',
+        data: { scenarioColor: SCENARIO_COLORS['quantum-era'] },
+        selectable: false,
+        focusable: false,
+      });
+    }
+    
+    // Process quantum events
+    for (let i = 0; i < quantumEvents.length; i++) {
+      const event = quantumEvents[i];
+      const eventX = quantumStartX + i * TIMELINE_LAYOUT.UNIFORM_SPACING - (TIMELINE_LAYOUT.NODE_POSITIONING.BALLOON_WIDTH / 2);
+      const eventY = quantumTimelineY - 150; // Above quantum timeline
+      const anchorX = quantumStartX + i * TIMELINE_LAYOUT.UNIFORM_SPACING;
+      const anchorId = `quantum-anchor-${event.id}`;
+      
+      // Create quantum event node
+      nodes.push({
+        id: event.id,
+        type: 'timelineEvent',
+        position: { x: eventX, y: eventY },
+        data: { 
+          event,
+          minDate,
+          maxDate,
+          gridScale: quantumEndX - quantumStartX + TIMELINE_LAYOUT.START_OFFSET * 2
+        },
+        draggable: true,
+        style: { borderColor: SCENARIO_COLORS['quantum-era'] },
+      });
+      
+      // Create quantum anchor
+      nodes.push({
+        id: anchorId,
+        type: 'timelineAnchor',
+        position: { x: anchorX, y: quantumTimelineY },
+        data: { eventId: event.id, scenarioId: 'quantum-era' },
+        draggable: false,
+        selectable: false,
+        focusable: false,
+      });
+      
+      // Create quantum connector
+      edges.push({
+        id: `connector-${event.id}`,
+        source: anchorId,
+        target: event.id,
+        type: 'connector',
+        style: {
+          stroke: SCENARIO_COLORS['quantum-era'],
+          strokeWidth: 2,
+          strokeOpacity: 0.6,
+          strokeDasharray: '5 3',
+        },
+        selectable: false,
+        focusable: false,
+      });
+      
+      // Create quantum marker
+      edges.push({
+        id: `marker-${event.id}`,
+        source: anchorId,
+        target: anchorId,
+        type: 'timelineMarker',
+        style: {
+          fill: SCENARIO_COLORS['quantum-era'],
+          stroke: SCENARIO_COLORS['quantum-era'],
+          strokeWidth: 2,
+        },
+        selectable: false,
+        focusable: false,
+      });
+    }
+  }
+  
+  // Process Satellite scenario events
+  if (satelliteEvents.length > 0) {
+    const satelliteStartX = branchPointX + TIMELINE_LAYOUT.UNIFORM_SPACING;
+    const satelliteEndX = satelliteStartX + (satelliteEvents.length - 1) * TIMELINE_LAYOUT.UNIFORM_SPACING;
+    
+    // Satellite timeline anchors
+    nodes.push({
+      id: 'satellite-start',
+      type: 'timelineAnchor',
+      position: { x: satelliteStartX, y: satelliteTimelineY },
+      data: { isStart: true, scenarioId: 'satellite-mesh' },
+      draggable: false,
+      selectable: false,
+      focusable: false,
+    });
+    
+    nodes.push({
+      id: 'satellite-end',
+      type: 'timelineAnchor',
+      position: { x: satelliteEndX, y: satelliteTimelineY },
+      data: { isEnd: true, scenarioId: 'satellite-mesh' },
+      draggable: false,
+      selectable: false,
+      focusable: false,
+    });
+    
+    // Satellite scenario backbone
+    edges.push({
+      id: 'satellite-backbone',
+      source: 'satellite-start',
+      target: 'satellite-end',
+      type: 'scenarioBackbone',
+      data: { scenarioColor: SCENARIO_COLORS['satellite-mesh'] },
+      selectable: false,
+      focusable: false,
+    });
+    
+    // Branch connection from main timeline to satellite scenario
+    if (branchPoint) {
+      edges.push({
+        id: 'branch-to-satellite',
+        source: `timeline-anchor-${branchPoint.id}`,
+        target: 'satellite-start',
+        type: 'scenarioBranch',
+        data: { scenarioColor: SCENARIO_COLORS['satellite-mesh'] },
+        selectable: false,
+        focusable: false,
+      });
+    }
+    
+    // Process satellite events
+    for (let i = 0; i < satelliteEvents.length; i++) {
+      const event = satelliteEvents[i];
+      const eventX = satelliteStartX + i * TIMELINE_LAYOUT.UNIFORM_SPACING - (TIMELINE_LAYOUT.NODE_POSITIONING.BALLOON_WIDTH / 2);
+      const eventY = satelliteTimelineY + 150; // Below satellite timeline
+      const anchorX = satelliteStartX + i * TIMELINE_LAYOUT.UNIFORM_SPACING;
+      const anchorId = `satellite-anchor-${event.id}`;
+      
+      // Create satellite event node
+      nodes.push({
+        id: event.id,
+        type: 'timelineEvent',
+        position: { x: eventX, y: eventY },
+        data: { 
+          event,
+          minDate,
+          maxDate,
+          gridScale: satelliteEndX - satelliteStartX + TIMELINE_LAYOUT.START_OFFSET * 2
+        },
+        draggable: true,
+        style: { borderColor: SCENARIO_COLORS['satellite-mesh'] },
+      });
+      
+      // Create satellite anchor
+      nodes.push({
+        id: anchorId,
+        type: 'timelineAnchor',
+        position: { x: anchorX, y: satelliteTimelineY },
+        data: { eventId: event.id, scenarioId: 'satellite-mesh' },
+        draggable: false,
+        selectable: false,
+        focusable: false,
+      });
+      
+      // Create satellite connector
+      edges.push({
+        id: `connector-${event.id}`,
+        source: anchorId,
+        target: event.id,
+        type: 'connector',
+        style: {
+          stroke: SCENARIO_COLORS['satellite-mesh'],
+          strokeWidth: 2,
+          strokeOpacity: 0.6,
+          strokeDasharray: '5 3',
+        },
+        selectable: false,
+        focusable: false,
+      });
+      
+      // Create satellite marker
+      edges.push({
+        id: `marker-${event.id}`,
+        source: anchorId,
+        target: anchorId,
+        type: 'timelineMarker',
+        style: {
+          fill: SCENARIO_COLORS['satellite-mesh'],
+          stroke: SCENARIO_COLORS['satellite-mesh'],
+          strokeWidth: 2,
+        },
+        selectable: false,
+        focusable: false,
+      });
+    }
   }
 
-  // Log the created nodes to debug
-  console.log(`Created ${nodes.length} nodes and ${edges.length} edges with ReactFlow timeline`);
+  console.log(`Created ${nodes.length} nodes and ${edges.length} edges with branching scenarios`);
   
   return { nodes, edges, minDate, maxDate };
 };
 
-
-  // The main timeline visualization component
+// The main timeline visualization component
 const TimelineFlowInner = () => {
   const reactFlowInstance = useReactFlow();
   const { zoom: currentZoom } = useViewport();
@@ -315,7 +543,7 @@ const TimelineFlowInner = () => {
   useEffect(() => {
     console.log(`🎨 TimelineFlow: Creating nodes from ${filteredEvents.length} filtered events`);
     filteredEvents.forEach(event => {
-      console.log(`  - ${event.title} (${event.category.join(', ')})`);
+      console.log(`  - ${event.title} (${event.category.join(', ')}) ${event.scenarioId ? `[${event.scenarioId}]` : '[main]'}`);
     });
     
     const { nodes, edges, minDate, maxDate } = createNodesAndEdges(filteredEvents);
@@ -325,32 +553,6 @@ const TimelineFlowInner = () => {
     setEdges(edges);
     setTimeRange({ minDate, maxDate, gridScale: 10000 });
   }, [filteredEvents]);
-  
-  // Init and position nodes in view without changing zoom
-  // useEffect(() => {
-  //   // console.log(`Current view has ${nodes.length} nodes`);
-    
-  //   // Delay positioning to ensure rendering is complete
-  //   const timer = setTimeout(() => {
-  //     if (reactFlowInstance && nodes.length > 0) {
-  //       console.log("Positioning nodes in view while preserving zoom");
-        
-  //       // Get the current viewport zoom level
-  //       const { zoom } = reactFlowInstance.getViewport();
-        
-  //       // Use fitView but ensure it respects our desired zoom level
-  //       reactFlowInstance.fitView({
-  //         padding: 0.5,
-  //         includeHiddenNodes: false,
-  //         duration: 800,
-  //         minZoom: zoom, // Don't zoom out further than current zoom
-  //         maxZoom: zoom  // Don't zoom in further than current zoom
-  //       });
-  //     }
-  //   }, 500);
-    
-  //   return () => clearTimeout(timer);
-  // }, [nodes, reactFlowInstance]);
   
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%' }} className="bg-gray-950">
@@ -373,11 +575,14 @@ const TimelineFlowInner = () => {
         edgesFocusable={false}
         panOnDrag={true}
       >
-        {/* <Controls className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-none shadow-lg rounded-lg" /> */}
         <MiniMap 
           className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-none shadow-lg rounded-lg"
           nodeColor={(node: Node) => {
-            const importance = (node.data as any)?.event?.importance;
+            const event = (node.data as any)?.event;
+            if (event?.scenarioId === 'quantum-era') return SCENARIO_COLORS['quantum-era'];
+            if (event?.scenarioId === 'satellite-mesh') return SCENARIO_COLORS['satellite-mesh'];
+            
+            const importance = event?.importance;
             if (importance === 5) return '#EF4444';
             if (importance === 4) return '#F97316';
             if (importance === 3) return '#EAB308';
@@ -406,4 +611,3 @@ export default function TimelineFlow() {
     </ReactFlowProvider>
   );
 }
-// Debug comment
