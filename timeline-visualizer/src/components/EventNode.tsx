@@ -121,10 +121,10 @@ export default function EventNode({ data }: { data: { event: TimelineEvent } }) 
           </div>
         )}
         {/* Horizontal positioning handles */}
-        <Handle type="target" position={Position.Left} style={{ visibility: 'hidden' }} />
-        <Handle type="source" position={Position.Right} style={{ visibility: 'hidden' }} />
+        <Handle type="target" position={Position.Left} id="left" style={{ visibility: 'hidden' }} />
+        <Handle type="source" position={Position.Right} id="right" style={{ visibility: 'hidden' }} />
         {/* Bottom handle for timeline connector */}
-        <Handle type="target" position={Position.Bottom} style={{ visibility: 'hidden' }} />
+        <Handle type="target" position={Position.Bottom} id="bottom" style={{ visibility: 'hidden' }} />
       
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">

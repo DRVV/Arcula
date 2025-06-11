@@ -339,6 +339,8 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
         source: anchorId,
         target: event.id,
         type: 'connector',
+        sourceHandle: 'top',
+        targetHandle: 'bottom',
         style: {
           stroke: SCENARIO_COLORS['quantum-era'],
           strokeWidth: 2,
@@ -456,6 +458,8 @@ const createNodesAndEdges = (events: TimelineEvent[]): { nodes: Node[]; edges: E
         source: anchorId,
         target: event.id,
         type: 'connector',
+        sourceHandle: 'top',
+        targetHandle: 'bottom',
         style: {
           stroke: SCENARIO_COLORS['satellite-mesh'],
           strokeWidth: 2,
