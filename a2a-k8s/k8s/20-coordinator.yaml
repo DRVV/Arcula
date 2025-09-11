@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coordinator-prompt
+  namespace: a2a-demo
+data:
+  prompt.txt: |
+    You are the coordinator. Read the user's input and choose which
+    workers to consult: "echo" for restating the text, "math" for simple
+    arithmetic like "add 2 3". Return a minimal JSON decision with a
+    list of targets and use sequential calls.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coordinator
+  namespace: a2a-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: coordinator }
+  template:
+    metadata:
+      labels: { app: coordinator }
+    spec:
+      containers:
+        - name: coordinator
+          image: a2a/coordinator:local
+          ports:
+            - containerPort: 8000
+          env:
+            - name: ECHO_URL
+              value: "http://worker-echo:8001/a2a"
+            - name: MATH_URL
+              value: "http://worker-math:8002/a2a"
+            - name: SERVICE_BASE_URL
+              value: "http://coordinator:8000"
+            - name: AGENT_PROMPT_FILE
+              value: "/config/prompt.txt"
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openai
+                  key: api_key
+          volumeMounts:
+            - name: prompt
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: prompt
+          configMap:
+            name: coordinator-prompt
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coordinator
+  namespace: a2a-demo
+spec:
+  selector:
+    app: coordinator
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http

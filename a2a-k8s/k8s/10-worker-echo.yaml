@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: worker-echo-prompt
+  namespace: a2a-demo
+data:
+  prompt.txt: |
+    You are an echo-style agent. Your sole job is to restate the
+    user's input verbatim, optionally prefixed with "echo:".
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-echo
+  namespace: a2a-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: worker-echo }
+  template:
+    metadata:
+      labels: { app: worker-echo }
+    spec:
+      containers:
+        - name: worker-echo
+          image: a2a/worker-echo:local
+          ports:
+            - containerPort: 8001
+          env:
+          - name: SERVICE_BASE_URL
+            value: "http://worker-echo:8001"
+          - name: AGENT_PROMPT_FILE
+            value: "/config/prompt.txt"
+          - name: OPENAI_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: openai
+                key: api_key
+          volumeMounts:
+            - name: prompt
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: prompt
+          configMap:
+            name: worker-echo-prompt
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker-echo
+  namespace: a2a-demo
+spec:
+  selector:
+    app: worker-echo
+  ports:
+    - port: 8001
+      targetPort: 8001
+      name: http

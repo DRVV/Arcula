@@ -1,0 +1,91 @@
+# Top-level .gitignore for a2a-k8s
+# Covers: Python workers, Next.js frontend, local tooling, and OS/editor cruft
+
+# ---- OS / Editors ----
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+.cache/
+pip-wheel-metadata/
+build/
+dist/
+.eggs/
+*.egg-info/
+
+# Testing & coverage
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage/
+htmlcov/
+
+# Type checking / linters
+.mypy_cache/
+.pytype/
+.ruff_cache/
+.pyre/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# ---- Node / Next.js ----
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.eslintcache
+.turbo/
+.parcel-cache/
+
+# Next.js build output
+.next/
+.next.cache/
+out/
+.vercel/
+
+# ---- Env & secrets ----
+# Keep example files tracked
+!.env.example
+!.envrc.example
+
+# Ignore common env/secrets
+.env
+.env.*
+.env.local
+.env.*.local
+*.env
+*.key
+*.pem
+*.crt
+*.csr
+secrets.*
+.python-version
+
+# ---- Kubernetes / local tooling ----
+.kube/
+*.kubeconfig
+skaffold.log
+
+# ---- Logs / temp ----
+logs/
+tmp/
+temp/
+*.pid
+*.pid.lock
+

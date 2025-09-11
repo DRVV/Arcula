@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+  namespace: a2a-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: webapp }
+  template:
+    metadata:
+      labels: { app: webapp }
+    spec:
+      containers:
+        - name: webapp
+          image: ghcr.io/example/webapp:latest
+          ports:
+            - containerPort: 8000
+          env:
+        - name: COORD_A2A_URL
+          value: "http://coordinator:8000/a2a"
+        - name: SERVICE_BASE_URL
+          value: "http://webapp:8000"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp
+  namespace: a2a-demo
+spec:
+  selector:
+    app: webapp
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http

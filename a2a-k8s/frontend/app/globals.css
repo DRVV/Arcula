@@ -1,0 +1,18 @@
+* { box-sizing: border-box; }
+html, body, #__next { height: 100%; }
+.container { display: grid; grid-template-rows: 1fr 220px; height: 100vh; }
+.top { display: grid; grid-template-columns: 1fr 340px; gap: 12px; padding: 12px; }
+.panel { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: #fff; }
+.panel-header { padding: 8px 10px; background: #f7f7f7; border-bottom: 1px solid #eee; font-weight: 600; }
+.panel-body { padding: 10px; height: calc(100% - 38px); overflow: auto; }
+.chat { padding: 12px; border-top: 1px solid #eee; background: #fafafa; display: flex; gap: 8px; }
+.chat input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+.chat button { padding: 10px 14px; border: 1px solid #444; background: #222; color: white; border-radius: 6px; cursor: pointer; }
+.status-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #eee; }
+.badge { padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+.badge.idle { background: #eef2ff; color: #2f3ca1; }
+.badge.busy { background: #fff7ed; color: #a24d13; }
+.badge.done { background: #ecfdf5; color: #086f4b; }
+.badge.route-mcp { background: #eff6ff; color: #1e40af; }
+.badge.route-llm { background: #fef3c7; color: #92400e; }
+.badge.route-local { background: #f3f4f6; color: #374151; }
