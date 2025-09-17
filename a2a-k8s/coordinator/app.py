@@ -1,5 +1,5 @@
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 import os, httpx, json, time, copy
 
 app = FastAPI(title="Coordinator Agent")
@@ -141,3 +141,162 @@ async def a2a_endpoint(req: JSONRPCRequest):
         response_obj["result"]["meta"]["trace"] = trace
         return response_obj
     return make_error(-32601, f"Method not found: {req.method}", req.id)
+
+# =========================
+# Topology Apply -> ConfigMaps
+# =========================
+try:
+    from kubernetes import client, config
+    from kubernetes.client import ApiException
+except Exception:
+    client = None
+    config = None
+    ApiException = Exception  # fallback
+
+
+def _load_kube():
+    # Try in-cluster, then fallback to local kubeconfig (for dev)
+    if config is None:
+        return
+    try:
+        config.load_incluster_config()
+    except Exception:
+        try:
+            config.load_kube_config()
+        except Exception:
+            pass
+
+
+def _get_namespace() -> str:
+    # Prefer explicit env, else serviceaccount namespace, else default
+    ns = os.environ.get("NAMESPACE")
+    if ns:
+        return ns
+    try:
+        with open("/var/run/secrets/kubernetes.io/serviceaccount/namespace", "r") as f:
+            return f.read().strip()
+    except Exception:
+        pass
+    return os.environ.get("POD_NAMESPACE", "default")
+
+
+@app.post("/apply-topology")
+async def apply_topology(req: Request):
+    """
+    Accepts topology payload:
+    {
+      "agents": [
+        { "id": "...", "label": "...", "role": "...",
+          "systemPrompt": "...", "mcpServers": [], "agentUrls": [] }
+      ]
+    }
+    Upserts a ConfigMap per agent with:
+      data:
+        system_prompt: string
+        mcp_servers.json: JSON array
+        agent_urls.json: JSON array
+    Labels:
+      app=a2a, kind=agent-config, agentId=<id>, managed-by=coordinator
+    Also prunes previously managed ConfigMaps not present in the payload.
+    """
+    try:
+        body = await req.json()
+    except Exception:
+        body = {}
+
+    agents = body.get("agents") or []
+    if not isinstance(agents, list):
+        agents = []
+
+    # If kubernetes client not available, just echo (useful for dev)
+    if client is None or config is None:
+        return {"ok": True, "note": "kubernetes client not installed", "agents": len(agents)}
+
+    _load_kube()
+    v1 = client.CoreV1Api()
+    namespace = _get_namespace()
+
+    # Build set of incoming agent IDs
+    incoming_ids = set()
+    for a in agents:
+        try:
+            aid = str(a.get("id") or "").strip()
+            if aid:
+                incoming_ids.add(aid)
+        except Exception:
+            continue
+
+    created = 0
+    updated = 0
+    deleted = 0
+    errors: list[str] = []
+
+    # Prune pass: delete existing managed ConfigMaps not in incoming payload
+    label_selector = "app=a2a,kind=agent-config,managed-by=coordinator"
+    try:
+        existing = v1.list_namespaced_config_map(namespace=namespace, label_selector=label_selector)
+        for item in existing.items or []:
+            labels = item.metadata.labels or {}
+            aid = labels.get("agentId") or ""
+            if aid and aid not in incoming_ids:
+                try:
+                    v1.delete_namespaced_config_map(name=item.metadata.name, namespace=namespace)
+                    deleted += 1
+                except ApiException as e:
+                    errors.append(f"delete {item.metadata.name}: {getattr(e, 'reason', str(e))}")
+    except ApiException as e:
+        errors.append(f"list existing: {getattr(e, 'reason', str(e))}")
+
+    # Upsert each agent
+    for a in agents:
+        try:
+            aid = str(a.get("id") or "").strip()
+            if not aid:
+                continue
+            cm_name = f"agent-config-{aid}"
+            system_prompt = str(a.get("systemPrompt") or "")
+            mcp_servers = a.get("mcpServers") or []
+            agent_urls = a.get("agentUrls") or []
+
+            metadata = client.V1ObjectMeta(
+                name=cm_name,
+                namespace=namespace,
+                labels={
+                    "app": "a2a",
+                    "kind": "agent-config",
+                    "managed-by": "coordinator",
+                    "agentId": aid,
+                },
+            )
+            data = {
+                "system_prompt": system_prompt,
+                "mcp_servers.json": json.dumps(mcp_servers),
+                "agent_urls.json": json.dumps(agent_urls),
+            }
+            body_cm = client.V1ConfigMap(api_version="v1", kind="ConfigMap", metadata=metadata, data=data)
+
+            # Try create; if exists, replace
+            try:
+                v1.create_namespaced_config_map(namespace=namespace, body=body_cm)
+                created += 1
+            except ApiException as e:
+                if getattr(e, "status", None) == 409:
+                    # Already exists -> replace
+                    try:
+                        v1.replace_namespaced_config_map(name=cm_name, namespace=namespace, body=body_cm)
+                        updated += 1
+                    except ApiException as e2:
+                        errors.append(f"replace {cm_name}: {getattr(e2, 'reason', str(e2))}")
+                else:
+                    errors.append(f"create {cm_name}: {getattr(e, 'reason', str(e))}")
+        except Exception as ex:
+            errors.append(f"agent upsert error: {str(ex)}")
+
+    return {
+        "ok": True,
+        "namespace": namespace,
+        "created": created,
+        "updated": updated,
+        "deleted": deleted,
+        "errors": errors,
+    }

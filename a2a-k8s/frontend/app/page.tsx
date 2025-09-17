@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useMemo, useState } from 'react';
-import AgentGraph from '../components/AgentGraph';
-import TaskStatus from '../components/TaskStatus';
+import ClusterCanvas from '../components/cluster/ClusterCanvas';
+import SidebarTemplates from '../components/designer/SidebarTemplates';
+import DesignerCanvas from '../components/designer/DesignerCanvas';
+import NodeInspector from '../components/designer/NodeInspector';
 import Chat from '../components/Chat';
 
 type AgentKey = 'coordinator' | 'echo' | 'math';
@@ -95,25 +97,26 @@ export default function HomePage() {
     }
   }, [setAllBusy, setFromResult]);
 
-  const agentList = useMemo(() => ([
-    { key: 'coordinator', label: 'Coordinator' },
-    { key: 'echo', label: 'Echo' },
-    { key: 'math', label: 'Math' },
-  ] as const), []);
 
   return (
     <div className="container">
       <div className="top">
         <div className="panel" style={{ minHeight: 360 }}>
-          <div className="panel-header">Agent Topology</div>
-          <div className="panel-body" style={{ height: 480 }}>
-            <AgentGraph />
+          <div className="panel-header">Designer</div>
+          <div className="panel-body" style={{ height: 480, padding: 0 }}>
+            <div style={{ display: 'flex', height: '100%' }}>
+              <SidebarTemplates />
+              <div style={{ flex: 1 }}>
+                <DesignerCanvas />
+              </div>
+              <NodeInspector />
+            </div>
           </div>
         </div>
         <div className="panel">
-          <div className="panel-header">Task Status</div>
-          <div className="panel-body">
-            <TaskStatus agents={agents} agentList={agentList as any} events={events} />
+          <div className="panel-header">Cluster Status</div>
+          <div className="panel-body" style={{ height: 480 }}>
+            <ClusterCanvas />
           </div>
         </div>
       </div>

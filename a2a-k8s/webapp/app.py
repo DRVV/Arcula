@@ -22,3 +22,20 @@ async def submit_task(task: UserTask):
         r = await client.post(COORD_A2A_URL, json=payload)
         r.raise_for_status()
         return r.json()
+
+APPLY_COORD_URL = os.environ.get("APPLY_COORD_URL", "http://coordinator:8000/apply-topology")
+
+@app.post("/apply-topology")
+async def apply_topology(payload: dict):
+    """
+    Proxy that accepts topology payload {agents:[...]} and forwards to coordinator.
+    This runs inside the cluster, so it can reach the 'coordinator' service directly.
+    """
+    async with httpx.AsyncClient(timeout=20) as client:
+        r = await client.post(APPLY_COORD_URL, json=payload)
+        r.raise_for_status()
+        # try to return upstream json, fallback to status
+        try:
+            return r.json()
+        except Exception:
+            return {"ok": r.status_code}
